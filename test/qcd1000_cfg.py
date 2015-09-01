@@ -9,19 +9,27 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )
 
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
-	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TprimeJetToTH_M800GeV_Tune4C_13TeV-madgraph-tauola/TprimeTH_Hdecays_M800_edmntuples_B2GAnaFW_v2/150310_192123/0000/B2GEDMNtuple_1.root',
-	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TprimeJetToTH_M800GeV_Tune4C_13TeV-madgraph-tauola/TprimeTH_Hdecays_M800_edmntuples_B2GAnaFW_v2/150310_192123/0000/B2GEDMNtuple_2.root',
-	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TprimeJetToTH_M800GeV_Tune4C_13TeV-madgraph-tauola/TprimeTH_Hdecays_M800_edmntuples_B2GAnaFW_v2/150310_192123/0000/B2GEDMNtuple_3.root',
+	'file:/home/t3-ku/erichjs/store/b2g/Spring15/QCD/QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8/crab_b2ganafw74xV2_QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8_RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/150629_145644/0000/B2GEDMNtuple_10.root',
+	'file:/home/t3-ku/erichjs/store/b2g/Spring15/QCD/QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8/crab_b2ganafw74xV2_QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8_RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/150629_145644/0000/B2GEDMNtuple_11.root',
+	'file:/home/t3-ku/erichjs/store/b2g/Spring15/QCD/QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8/crab_b2ganafw74xV2_QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8_RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/150629_145644/0000/B2GEDMNtuple_12.root',
+	'file:/home/t3-ku/erichjs/store/b2g/Spring15/QCD/QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8/crab_b2ganafw74xV2_QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8_RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/150629_145644/0000/B2GEDMNtuple_13.root',
+	'file:/home/t4-ku/erichjs/store/b2g/Spring15/QCD/QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8/crab_b2ganafw74xV2_QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8_RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/150629_145644/0000/B2GEDMNtuple_14.root',
     )
 )
 
 process.analyze = cms.EDAnalyzer('TprimeAna'
 )
+
+from Analysis.VLQAna.JetSelector_cfi import *
+from Analysis.VLQAna.VLQAna_cfi import *
+
+process.load ("Analysis.VLQAna.HbbCandidateProducer_cfi") 
+
 
 
 process.presel = cms.EDFilter("VLQAna",
@@ -84,41 +92,43 @@ process.presel = cms.EDFilter("VLQAna",
     HJetSelParams              = defaultHJetSelectionParameters.clone(),
     WJetSelParams              = defaultWJetSelectionParameters.clone(),
     ak8jetsPtMin               = cms.double  (300),
+    hltPaths                   = cms.vstring ("HLT_PFJet260_v1", "HLT_AK8PFJet360TrimMod_Mass30_v1", "HLT_PFHT900_v1"),
+    TJetSelParams              = defaultTJetSelectionParameters.clone(),
     ak8jetsEtaMax              = cms.double  (2.4),
     ak4jetsPtMin               = cms.double  (30),
     ak4jetsEtaMax              = cms.double  (2.4),
-    hltPaths                   = cms.vstring ("HLT_PFJet260_v1", "HLT_AK8PFJet360TrimMod_Mass30_v1", "HLT_PFHT900_v1"),
-    TJetSelParams              = defaultTJetSelectionParameters.clone(),
-    HTMin                      = cms.double  (300.), 
+    HTMin                      = cms.double  (300.),
     wmassmin                   = cms.double  (50.),
     wmassmax                   = cms.double  (100.),
     scaledmassdropmin          = cms.double  (0.),
-    scaledmassdropmax          = cms.double  (0.5),
-    )
-
-
-
-process.TFileService = cms.Service("TFileService", fileName = cms.string('Tprime800-615.root') )
-
-process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string("SingleTprime800AnaEvts.root"),
-    SelectEvents = cms.untracked.PSet(
-      SelectEvents = cms.vstring('p')
+    scaledmassdropmax          = cms.double  (0.5),  
+    HbbCandsLabel              = cms.InputTag("hbb"),
+    jetAK8SoftDropMassLabel    = cms.InputTag("jetsAK8", "jetAK8SoftDropMass"),
+   GenHSelParams    = genPartParams.clone(
+      ids            = cms.vint32(25),
+      statuses       = cms.vint32(21,22,23,24,25,26,27,28,29,52),
+      checkstatus    = cms.bool(False),
       ),
-    outputCommands = cms.untracked.vstring(
-      "drop *",
-      "keep *_genPart_*_*",
-      "keep *_jetsAK4_*_*",
-      "keep *_jetsAK8_*_*",
-      "keep *_*_npv_*",
-      "keep *_subjets*_*_*",
-      "keep *_ana_*_*",
-      "keep *_vjj_*_*",
-      )
-    )
+    GenbSelParams    = genPartParams.clone(
+      ids            = cms.vint32(5),
+      momids         = cms.vint32(25),
+      checkmomid     = cms.bool(True),
+      statuses       = cms.vint32(23),
+      checkstatus    = cms.bool(True),
+      ),
+    GenbbarSelParams = genPartParams.clone(
+      ids            = cms.vint32(-5),
+      momids         = cms.vint32(25),
+      checkmomid     = cms.bool(True),
+      statuses       = cms.vint32(23),
+      checkstatus    = cms.bool(True),
+      )  )
 
-process.p = cms.Path(process.presel*process.analyze)
-#process.p = cms.Path(process.presel)
+
+process.TFileService = cms.Service("TFileService", fileName = cms.string('QCD1000.root') )
+
+
+process.p = cms.Path(process.hbb*process.presel*process.analyze)
 
 #process.p = cms.Schedule(p2)
-#process.outpath = cms.EndPath(process.out)
+

@@ -9,14 +9,26 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )
 
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
-	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TprimeJetToTH_M800GeV_Tune4C_13TeV-madgraph-tauola/TprimeTH_Hdecays_M800_edmntuples_B2GAnaFW_v2/150310_192123/0000/B2GEDMNtuple_1.root',
-	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TprimeJetToTH_M800GeV_Tune4C_13TeV-madgraph-tauola/TprimeTH_Hdecays_M800_edmntuples_B2GAnaFW_v2/150310_192123/0000/B2GEDMNtuple_2.root',
-	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TprimeJetToTH_M800GeV_Tune4C_13TeV-madgraph-tauola/TprimeTH_Hdecays_M800_edmntuples_B2GAnaFW_v2/150310_192123/0000/B2GEDMNtuple_3.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_1.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_2.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_3.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_4.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_5.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_6.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_7.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_8.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_9.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_10.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_11.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_12.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_13.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_14.root',
+	'file:/home/t3-ku/erichjs/store/b2g/PHYS14/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/TTJets_edmntuples_B2GAnaFW_1/150223_193315/0000/B2GEDMNtuple_15.root',
     )
 )
 
@@ -84,41 +96,23 @@ process.presel = cms.EDFilter("VLQAna",
     HJetSelParams              = defaultHJetSelectionParameters.clone(),
     WJetSelParams              = defaultWJetSelectionParameters.clone(),
     ak8jetsPtMin               = cms.double  (300),
+    hltPaths                   = cms.vstring ("HLT_PFJet260_v1", "HLT_AK8PFJet360TrimMod_Mass30_v1", "HLT_PFHT900_v1"),
+    TJetSelParams              = defaultTJetSelectionParameters.clone(),
     ak8jetsEtaMax              = cms.double  (2.4),
     ak4jetsPtMin               = cms.double  (30),
     ak4jetsEtaMax              = cms.double  (2.4),
-    hltPaths                   = cms.vstring ("HLT_PFJet260_v1", "HLT_AK8PFJet360TrimMod_Mass30_v1", "HLT_PFHT900_v1"),
-    TJetSelParams              = defaultTJetSelectionParameters.clone(),
-    HTMin                      = cms.double  (300.), 
+    HTMin                      = cms.double  (300.),
     wmassmin                   = cms.double  (50.),
     wmassmax                   = cms.double  (100.),
     scaledmassdropmin          = cms.double  (0.),
     scaledmassdropmax          = cms.double  (0.5),
-    )
+ )
 
 
+process.TFileService = cms.Service("TFileService", fileName = cms.string('TTJets.root') )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string('Tprime800-615.root') )
-
-process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string("SingleTprime800AnaEvts.root"),
-    SelectEvents = cms.untracked.PSet(
-      SelectEvents = cms.vstring('p')
-      ),
-    outputCommands = cms.untracked.vstring(
-      "drop *",
-      "keep *_genPart_*_*",
-      "keep *_jetsAK4_*_*",
-      "keep *_jetsAK8_*_*",
-      "keep *_*_npv_*",
-      "keep *_subjets*_*_*",
-      "keep *_ana_*_*",
-      "keep *_vjj_*_*",
-      )
-    )
 
 process.p = cms.Path(process.presel*process.analyze)
-#process.p = cms.Path(process.presel)
 
 #process.p = cms.Schedule(p2)
-#process.outpath = cms.EndPath(process.out)
+
