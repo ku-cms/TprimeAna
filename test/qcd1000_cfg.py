@@ -122,7 +122,10 @@ process.presel = cms.EDFilter("VLQAna",
       checkmomid     = cms.bool(True),
       statuses       = cms.vint32(23),
       checkstatus    = cms.bool(True),
-      )  )
+      ),
+    BTaggedLooseAK4SelParams   = defaultBTaggedAK4JetSelectionParameters.clone(jetCSVDiscMin = cms.double(0.423),),
+    BTaggedMediumAK4SelParams   = defaultBTaggedAK4JetSelectionParameters.clone(),
+  )
 
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string('QCD1000.root') )
