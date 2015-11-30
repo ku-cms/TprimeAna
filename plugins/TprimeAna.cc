@@ -37,6 +37,8 @@
 #include <string>
 #include <iostream>
 #include "AnalysisDataFormats/BoostedObjects/interface/GenParticleWithDaughters.h"
+#include <TH2F.h>
+#include <TTree.h>
 
 using namespace std;
 
@@ -73,7 +75,51 @@ class TprimeAna : public edm::EDAnalyzer {
 
       edm::Service<TFileService> fs;
       std::map< std::string, TH1F* > histos;
+      std::map< std::string, TH2F* > histos2;
+	
+      TTree * cutTree;
 
+        bool bx2AK8Jets , b2AK8Jets, b6AK4Jets , b2AK4Jets , b1AK4Jets, bTMass , bHMass , bHTag , bTTag, bTTagSubj,
+             bLoose1 ,bMedium1 , bTight1;
+
+        double softDropMassLeadAK8; 
+        double trimmedMassLeadAK8; 
+        double ptLeadingAK4,pt2ndAK4,pt3rdAK4,pt4thAK4,pt5thAK4,pt6thAK4;
+        double etaLeadingAK4,eta2ndAK4,eta3rdAK4,eta4thAK4,eta5thAK4,eta6thAK4;
+	double massTprime;
+
+        bool bAK4LeadingPt; 
+        bool bMass2AK8_1200;
+        bool bMass2AK8_1700; 
+        bool bSoftDropMassAK8; 
+        bool bTrimmedMassAK8; 
+	
+        std::vector<bool> * bTrigger;
+
+	std::vector<double> * ptAK8;
+	std::vector<double> * etaAK8;
+	std::vector<unsigned> * AK8Idx;
+
+	std::vector<double> * EvtWeight;
+
+	std::vector<unsigned> * idxHTag;
+	std::vector<unsigned> * idxTTag;
+	std::vector<unsigned> * idxWTag;
+	std::vector<unsigned> * idxbTag;
+
+	std::vector<unsigned> * subjAK8;
+
+	unsigned nAK8;
+
+        bool brelM;
+        // Rel Pt
+
+        double relM, relpt;
+        bool brelpt; 
+        bool bForwardJet;
+        unsigned looseBTag, mediumBTag, tightBTag;
+
+	double htak4, fMaxEtaAK4;
 };
 //
 // constants, enums and typedefs
@@ -94,6 +140,7 @@ TprimeAna::TprimeAna(const edm::ParameterSet& iConfig):
 
 {
    //now do what ever initialization is needed
+ 
 
 }
 
@@ -201,7 +248,7 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       edm::Handle<std::vector<float> > mh_jetsCmsTopTagtau2;
       edm::Handle<std::vector<float> > mh_jetsCmsTopTagtau3;
 
-      edm::Handle<std::vector<float> > mh_subjetCmsTopTagCSVV1;
+      edm::Handle<std::vector<float> > mh_subjetAK8CSVV1;
 //      edm::Handle<GenParticlesWithDaughtersCollection> mh_hbbCandidates;
 
       edm::Handle<std::vector<float> > mh_genPartPt;
@@ -222,6 +269,7 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       edm::Handle<unsigned> mh_nmediumBTaggedAK4Jets;
       edm::Handle<unsigned> mh_ntightBTaggedAK4Jets;
       edm::Handle<vector<unsigned> > mh_bjetsIdx;
+      edm::Handle<vector<unsigned> > mh_wjetsIdx;
       edm::Handle<unsigned> mh_nWJets;
       edm::Handle<unsigned> mh_nHJets;
       edm::Handle<unsigned> mh_nTJets;
@@ -239,8 +287,10 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       edm::Handle<double> mh_mass1stAK8;
       edm::Handle<double> mh_mass2ndAK8;
 
-       edm::Handle<vector<string> > h_trigName             ; iEvent.getByLabel (l_trigName               , h_trigName             );
-       edm::Handle<float>  h_trigBit              ; iEvent.getByLabel (l_trigBit                , h_trigBit              );
+      edm::Handle<vector<string> > h_trigName             ; iEvent.getByLabel (l_trigName               , h_trigName             );
+      edm::Handle<float>  h_trigBit              ; iEvent.getByLabel (l_trigBit                , h_trigBit              );
+
+      edm::Handle<vector<double> > mh_EvtWeight;
 
 
       iEvent.getByLabel("eventInfo", "evtInfoEventNumber", mh_evtNum);
@@ -273,6 +323,8 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       iEvent.getByLabel("anavars", "nAk4Unmatched",mh_nAk4Unmatched);
       iEvent.getByLabel("anavars", "tjetsIdx-lsubj",mh_tjetsIdx_lsubj);
       iEvent.getByLabel("anavars", "hjetsIdx-lsubj",mh_hjetsIdx_lsubj);
+      iEvent.getByLabel("anavars", "wjetsIdx",mh_wjetsIdx);
+      
 
       iEvent.getByLabel("presel", "ak4goodjets", mh_jetAK4Good);
       iEvent.getByLabel("presel", "htak4jets", mh_htak4jets);
@@ -296,14 +348,16 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       iEvent.getByLabel("presel","mass1stAK8",mh_mass1stAK8);
       iEvent.getByLabel("presel","mass2ndAK8",mh_mass2ndAK8);
 
+      if(!_isData)
+      	iEvent.getByLabel("presel","EvtWeight",mh_EvtWeight);
 
       iEvent.getByLabel("jetsAK8", "jetAK8Pt", mh_jetAK8Pt);
       iEvent.getByLabel("jetsAK8", "jetAK8Eta", mh_jetAK8Eta);
       iEvent.getByLabel("jetsAK8", "jetAK8Phi", mh_jetAK8Phi);
       iEvent.getByLabel("jetsAK8", "jetAK8E", mh_jetAK8E);
       iEvent.getByLabel("jetsAK8", "jetAK8Mass", mh_jetAK8Mass);
-      iEvent.getByLabel("jetsAK8", "jetAK8subjetIndex0", mh_jetAK8subjetIndex0);
-      iEvent.getByLabel("jetsAK8", "jetAK8subjetIndex1", mh_jetAK8subjetIndex1);
+      iEvent.getByLabel("jetsAK8", "jetAK8vSubjetIndex0", mh_jetAK8subjetIndex0);
+      iEvent.getByLabel("jetsAK8", "jetAK8vSubjetIndex1", mh_jetAK8subjetIndex1);
       iEvent.getByLabel("jetsAK8", "jetAK8HadronFlavour", mh_jetAK8HadronFlavour);
       iEvent.getByLabel("jetsAK8", "jetAK8nSubJets", mh_jetAK8nSubjets );
       
@@ -330,7 +384,7 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       iEvent.getByLabel("jetsCmsTopTag", "jetsCmsTopTagtau2", mh_jetsCmsTopTagtau2);
       iEvent.getByLabel("jetsCmsTopTag", "jetsCmsTopTagtau3", mh_jetsCmsTopTagtau3);
 
-      iEvent.getByLabel("subjetsCmsTopTag", "subjetCmsTopTagCSVV1", mh_subjetCmsTopTagCSVV1);
+      iEvent.getByLabel("subjetsAK8", "subjetAK8CSV", mh_subjetAK8CSVV1);
 
 //      iEvent.getByLabel("analyze","HbbCandidates", mh_hbbCandidates);
 /*
@@ -354,23 +408,29 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       const std::vector<float> * jetflavor = mh_jetAK4HadronFlavour.product();
    //   const std::vector<unsigned> * jetgood = mh_jetAK4Good.product();
       const std::vector<float> * jetCSV = mh_jetAK4CSV.product();
+      const std::vector<unsigned> * ak4UnmatchedIdx = mh_ak4UnmatchedIdx.product();
 
       const std::vector<float> * jet8pt = mh_jetAK8Pt.product();
       const std::vector<float> * jet8eta = mh_jetAK8Eta.product();
       const std::vector<float> * jet8phi = mh_jetAK8Phi.product();
       const std::vector<float> * jet8M = mh_jetAK8Mass.product();
+      const std::vector<float> * jet8nSubjets = mh_jetAK8nSubjets.product();
       const std::vector<unsigned> * jet8good = mh_jetAK8Good.product();
       const std::vector<float> * softDropMassAK8 = mh_jetAK8SoftDropMass.product();
       const std::vector<float> * trimmedMassAK8 = mh_jetAK8TrimmedMass.product();
+      const std::vector<float> * jetAK8subjetIndex0 = mh_jetAK8subjetIndex0.product();
+      const std::vector<float> * jetAK8subjetIndex1 = mh_jetAK8subjetIndex1.product();
 
       const unsigned * nAK4Unmatched = mh_nAk4Unmatched.product();
       const std::vector<unsigned> * tjetsIdx_lsubj = mh_tjetsIdx_lsubj.product();
       const std::vector<unsigned> * hjetsIdx_lsubj = mh_hjetsIdx_lsubj.product();
+      const std::vector<unsigned> * wjetsIdx = mh_wjetsIdx.product();
+
       const std::vector<unsigned> * bjetsIdx = mh_bjetsIdx.product();
 
 //      const std::vector<float> * jetAK8nSubjets = mh_jetAK8nSubjets.product();
 
-//      const std::vector<float> * subjet8CSV = mh_subjetCmsTopTagCSVV1.product();
+      const std::vector<float> * subjet8CSV = mh_subjetAK8CSVV1.product();
 /*
       const std::vector<float> * genPartID = mh_genPartID.product();
       const std::vector<float> * genPartMomID = mh_genPartMom0ID.product();
@@ -379,11 +439,11 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       const std::vector<float> * genPartPhi = mh_genPartPhi.product();
 */
       const double * htak4jets = mh_htak4jets.product();
+      htak4 = *htak4jets;
+
       const double * htak4trigjets = mh_htak4trigjets.product();
       const double * htak8jets = mh_htak8jets.product();
 
-      const std::vector<unsigned> * ak4UnmatchedIdx = mh_ak4UnmatchedIdx.product(); 
-     
 
       const unsigned * ngoodAK4Jets = mh_ngoodAK4Jets.product();
       const unsigned * ngoodAK8Jets = mh_ngoodAK8Jets.product();
@@ -408,53 +468,395 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 //      const ULong64_t * evtNum = mh_evtNum.product();
 
+      const std::vector<double> * EvtWeight_;
 
-
+      if(!_isData) EvtWeight_ = mh_EvtWeight.product();
+	else {
+		EvtWeight_ = new std::vector<double>{1};
+	}
+			
 //	Trigger
 //
- if(_isData){
-  unsigned int hltdecisions(0) ;
+// if(_isData){
+  //unsigned int hltdecisions(0) ;
+
+  bTrigger->clear();
   for ( unsigned int i = 0 ; i < h_trigName.product()->size() ; i++ ) {
-    //vector<string>::const_iterator it = find( (h_trigName.product())->begin(), (h_trigName.product())->end(), myhltpath) ; 
 
         //Support regex pattern matching: wildcards . and .*
         //
-       bool bPass = 0;
-       for( const string &myhltpath : hltPaths_ ) {
+       // cout << hltPaths_.size()<<endl;
+       for( unsigned int j = 0; j < hltPaths_.size() ; j++ ) {
 
            string hltname = h_trigName.product()->at(i);
-           boost::regex pattern(myhltpath);
+           boost::regex pattern(hltPaths_[j]);
+
+           bTrigger->push_back(boost::regex_match(hltname , pattern)>0);
+          // cout << hltname << "  " << hltPaths_[j] << "  " << (*bTrigger)[j] << endl;
 
 
-                                      //      cout << hltname << "  " << pattern << "  " << result << endl;
-
-           bPass |= boost::regex_match(hltname , pattern);
-           hltdecisions += (pow(2,i) && bPass);
+           //hltdecisions += (pow(2,i) && bPass);
        }
    }
-   if (hltdecisions == 0) return;
- }
- else {
-	if (*htak4trigjets < 800) return;
+
+   // Setup cut conditions.	
+
+// }
+// else {
+//	if (*htak4trigjets < 800) return;
 	
- }
+ //}
+      //cout << "conditions"<<endl;
+      
+
+	nAK8 = (*ngoodAK8Jets);
+
+//	cout << "hjetsIdx_lsubj: " << hjetsIdx_lsubj->size() << endl; 
+//	cout << "tjetsIdx_lsubj: " << tjetsIdx_lsubj->size() << endl; 
+	
+	subjAK8->clear();
+	idxHTag->clear();
+	idxTTag->clear();
+	ptAK8->clear();
+	etaAK8->clear();
+	EvtWeight->clear();
+	AK8Idx->clear();
+	idxbTag->clear();
+
+	for (unsigned i = 0 ; i < *ngoodAK8Jets ; i++) {
+	    ptAK8->push_back((*jet8pt)[(*jet8good)[i]]);
+	    etaAK8->push_back((*jet8eta)[(*jet8good)[i]]);
+	    AK8Idx->push_back((*jet8good)[i]);
+//	    subjAK8->push_back((*jet8nSubjets)[
+	    
+	}
+
+	idxHTag->reserve(hjetsIdx_lsubj->size());
+	idxTTag->reserve(tjetsIdx_lsubj->size());
+	idxWTag->reserve(wjetsIdx->size());
+	EvtWeight->reserve(EvtWeight_->size());
+	idxbTag->reserve(bjetsIdx->size());
+
+	std::copy(hjetsIdx_lsubj->begin(), hjetsIdx_lsubj->end(),
+              std::back_inserter(*idxHTag));
+
+	std::copy(tjetsIdx_lsubj->begin(), tjetsIdx_lsubj->end(),
+              std::back_inserter(*idxTTag));
+
+        std::copy(wjetsIdx->begin(), wjetsIdx->end(),
+              std::back_inserter(*idxWTag));
+
+        std::copy(EvtWeight_->begin(), EvtWeight_->end(),
+              std::back_inserter(*EvtWeight));
+
+        std::copy(bjetsIdx->begin(), bjetsIdx->end(),
+              std::back_inserter(*idxbTag));
 
 
+//	cout << "nAk8: " <<nAK8 << endl;
+/*
+	for(unsigned i = 0 ; i < idxTTag->size() ; i++) {
+	   
+	    cout << "TTag_lsubj " <<i << ": " << (*tjetsIdx_lsubj)[i] << endl;
+	}
+	for(unsigned i = 0 ; i < idxTTag->size() ; i++) {
+	   
+	    cout << "TTag " <<i << ": " << (*idxTTag)[i] << endl;
+	}
+	for(unsigned i = 0 ; i < idxHTag->size() ; i++) {
+	   
+	    cout << "HTag " <<i << ": " << (*idxHTag)[i] << endl;
+	}
+*/
+	//idxTTag = &((*tjetsIdx_lsubj)[0]);
+	//idxHTag = &((*hjetsIdx_lsubj)[0]);
+
+
+        bx2AK8Jets = (*ngoodAK8Jets == 2);
+
+
+        // 2 AK8 Jets
+        b2AK8Jets = (*ngoodAK8Jets > 1);
+        //
+        // 6+ AK4 Jets
+        b6AK4Jets = (*ngoodAK4Jets > 5 );
+        b2AK4Jets = (*nAK4Unmatched > 1 );
+        b1AK4Jets = (*nAK4Unmatched > 0 );
+        
+        // TMass        
+        bTMass = (( *mass1stAK8 > 160 && *mass1stAK8 < 190) || (*mass2ndAK8 > 160 && *mass2ndAK8 < 190));
+       
+        
+        //HMass
+        bHMass = (( *mass1stAK8 > 110 && *mass1stAK8 < 140) || (*mass2ndAK8 > 110 && *mass2ndAK8 < 140));
+        
+        // H Tag
+        bHTag = (hjetsIdx_lsubj->size() > 0);
+
+//	cout << "tags "<< tjetsIdx_lsubj->size()<<endl;
+//	cout << "subjets "<< jet8nSubjets->size()<<":"<<subjet8CSV->size()<<endl;
+        
+        // T Tag
+        bTTag = (tjetsIdx_lsubj->size() > 0);
+//	cout << "------------------------" <<endl;	
+//	cout << "Total subjets: " << subjet8CSV->size() << endl;
+	if(subjet8CSV->size() > 0){
+		bool bTTagSubj1 = false;
+		bool bTTagSubj2 = false;
+		unsigned subjIdx = 0;
+
+		for (unsigned i = 0 ; i < jet8nSubjets->size() ; i++) {
+		   // cout << "Jet " << i << "  subjets: " << (*jet8nSubjets)[i] << endl;
+		    unsigned nbSub = 0;
+		    for(unsigned k = 0 ; k < hjetsIdx_lsubj->size() ; k++) 
+		      if(i == (*hjetsIdx_lsubj)[k])
+///		          cout << "H Jet: "<< i << endl; //<< ": "<< (*jet8nSubjets)[i] <<" subjets" << endl; 
+//			cout << "subjet idx0: " << (*jetAK8subjetIndex0)[i] << endl;
+///			cout << "subjet idx1: " << (*jetAK8subjetIndex1)[i] << endl;
+//			cout << "CSV0: " << (*subjet8CSV)[(*jetAK8subjetIndex0)[i]] << endl;
+//			cout << "CSV1: " << (*subjet8CSV)[(*jetAK8subjetIndex1)[i]]	<< endl;
+			if((*jetAK8subjetIndex0)[i]!=-1 and (*subjet8CSV)[(*jetAK8subjetIndex0)[i]]>.605) nbSub++; 
+			if((*jetAK8subjetIndex1)[i]!=-1 and (*subjet8CSV)[(*jetAK8subjetIndex1)[i]]>.605) nbSub++; 
+/*
+		    for (unsigned j = 0 ; j < (*jet8nSubjets)[i] ; j++ ) {
+			cout << "subjet: " << subjIdx+j<<" = " << (*subjet8CSV)[subjIdx+j] <<endl;
+			if((*subjet8CSV)[subjIdx+j]>.605) {
+			    nbSub++;
+			}			
+		    }
+*/
+		    subjAK8->push_back(nbSub);
+		    subjIdx += (*jet8nSubjets)[i];
+		
+		}		
+
+
+		unsigned subj1Idx = 0;
+		unsigned subj2Idx = 0;
+		if(tjetsIdx_lsubj->size() > 0) {
+		   for (unsigned i = 0 ; i < (*tjetsIdx_lsubj)[0] ; i++) {
+//			cout <<"t idx[0] " << (*tjetsIdx_lsubj)[0] << endl;
+			subj1Idx += (*jet8nSubjets)[i];
+		   }
+//		   cout << "subj1Idx: " <<  subj1Idx << endl; 
+		   bTTagSubj1 = ((*subjet8CSV)[subj1Idx]>.605);
+		}
+		if(tjetsIdx_lsubj->size() > 1) {
+		    for (unsigned i = 0 ; i < (*tjetsIdx_lsubj)[1] ; i++) {
+//			cout <<"t idx[1] " << (*tjetsIdx_lsubj)[1] << endl;
+			subj2Idx += (*jet8nSubjets)[i];
+		    }
+//		    cout << "subj2Idx: " <<  subj2Idx << endl; 
+		    bTTagSubj2 = ((*subjet8CSV)[subj2Idx]>.605);
+		}
+		
+		
+
+		bTTagSubj = bTTagSubj1 or bTTagSubj2;
+	}
+        //
+//        cout << "H T Tag" << endl;
+        //                                                                                                 // b-tagged jets
+        //
+        //unsigned looseBTag, mediumBTag, tightBTag;
+        looseBTag = mediumBTag = tightBTag = 0;
+        //
+        for( unsigned ak4idx : *ak4UnmatchedIdx) {
+                                        if(bjetsIdx->end() != std::find(bjetsIdx->begin(), bjetsIdx->end(), ak4idx)) {
+                           if((*jetCSV)[ak4idx] > .97) { tightBTag++;}
+                           if((*jetCSV)[ak4idx] > .89) { mediumBTag++;}
+                           if((*jetCSV)[ak4idx] > .605) { looseBTag++;}
+                                                                                                       }
+        }
+        TLorentzVector J1, J2;
+	//float relM = 0;
+
+        if(jet8good->size() >= 2) {
+                J1.SetPtEtaPhiM((*jet8pt)[(*jet8good)[0]],
+                         (*jet8eta)[(*jet8good)[0]],
+                         (*jet8phi)[(*jet8good)[0]],
+                         (*jet8M)[(*jet8good)[0]]);
+
+                J2.SetPtEtaPhiM((*jet8pt)[(*jet8good)[1]],
+                         (*jet8eta)[(*jet8good)[1]],
+                         (*jet8phi)[(*jet8good)[1]],
+                         (*jet8M)[(*jet8good)[1]]);
+
+                relM = ((*jet8M)[(*jet8good)[0]] + (*jet8M)[(*jet8good)[1]]) / (J1 + J2).M();
+
+        }
+        //
+        bLoose1 = (looseBTag > 0);
+//        bool bLoose2 = (looseBTag > 1);
+
+        bMedium1 = (mediumBTag > 0);
+        //      bool bMedium2 = (mediumBTag > 1);
+
+        bTight1 = (tightBTag > 0);
+        //      bool bTight2 = (tightBTag > 1);
+
+        softDropMassLeadAK8 = (*softDropMassAK8)[(*jet8good)[0]];
+        trimmedMassLeadAK8 = (*trimmedMassAK8)[(*jet8good)[0]];
+
+	//Mass of T' candidate
+	
+//	cout << "Tprime" << endl;
+	if(jet8good->size() >= 2 && idxHTag->size() >0 && idxTTag->size() > 0) {
+ 		TLorentzVector TCand, HCand;
+		
+		HCand.SetPtEtaPhiM((*jet8pt)[(*idxHTag)[0]],
+                         (*jet8eta)[(*idxHTag)[0]],
+                         (*jet8phi)[(*idxHTag)[0]],
+                         (*jet8M)[(*idxHTag)[0]]);
+
+                TCand.SetPtEtaPhiM((*jet8pt)[(*idxTTag)[0]],
+                         (*jet8eta)[(*idxTTag)[0]],
+                         (*jet8phi)[(*idxTTag)[0]],
+                         (*jet8M)[(*idxTTag)[0]]);
+
+		massTprime = (HCand + TCand).M();
+	}
+//	cout << "Tprime" << endl;
+
+     //   ptLeadingAK4=pt2ndAK4=pt3rdAK4=pt4thAK4=pt5thAK4=pt6thAK4 = 0;
+//	etaLeadingAK4=eta2ndAK4=eta3rdAK4=eta4thAK4=eta5thAK4=eta6thAK4 = 0;
+
+        if(ak4UnmatchedIdx->size() >0 ){
+                ptLeadingAK4 = (*jetpt)[(*ak4UnmatchedIdx)[0]];
+                histos["ptLeadingAK4"]->Fill(ptLeadingAK4);
+		etaLeadingAK4 = (*jeteta)[(*ak4UnmatchedIdx)[0]];
+                histos["etaLeadingAK4"]->Fill(etaLeadingAK4);
+        }
+
+        if(ak4UnmatchedIdx->size() >1 ){
+                pt2ndAK4 = (*jetpt)[(*ak4UnmatchedIdx)[1]];
+                histos["pt2ndAK4"]->Fill(pt2ndAK4);
+		etaLeadingAK4 = (*jeteta)[(*ak4UnmatchedIdx)[1]];
+                histos["eta2ndAK4"]->Fill((*jeteta)[(*ak4UnmatchedIdx)[1]]);
+        }
+        if(ak4UnmatchedIdx->size() >2 ){
+                pt3rdAK4 = (*jetpt)[(*ak4UnmatchedIdx)[2]];
+                histos["pt3rdAK4"]->Fill(pt3rdAK4);
+		etaLeadingAK4 = (*jeteta)[(*ak4UnmatchedIdx)[2]];
+                histos["eta3rdAK4"]->Fill((*jeteta)[(*ak4UnmatchedIdx)[2]]);
+        }
+        if(ak4UnmatchedIdx->size() >3 ){
+                pt4thAK4 = (*jetpt)[(*ak4UnmatchedIdx)[3]];
+                histos["pt4thAK4"]->Fill(pt4thAK4);
+		etaLeadingAK4 = (*jeteta)[(*ak4UnmatchedIdx)[3]];
+                histos["eta4thAK4"]->Fill((*jeteta)[(*ak4UnmatchedIdx)[3]]);
+        }
+        if(ak4UnmatchedIdx->size() > 4 ){
+                pt5thAK4 = (*jetpt)[(*ak4UnmatchedIdx)[4]];
+                histos["pt5thAK4"]->Fill(pt5thAK4);
+		etaLeadingAK4 = (*jeteta)[(*ak4UnmatchedIdx)[4]];
+                histos["eta5thAK4"]->Fill((*jeteta)[(*ak4UnmatchedIdx)[4]]);
+        }
+        if(ak4UnmatchedIdx->size() >5 ){
+                pt6thAK4 = (*jetpt)[(*ak4UnmatchedIdx)[5]];
+                histos["pt6thAK4"]->Fill(pt6thAK4);
+		etaLeadingAK4 = (*jeteta)[(*ak4UnmatchedIdx)[5]];
+                histos["eta6thAK4"]->Fill((*jeteta)[(*ak4UnmatchedIdx)[5]]);
+        }
+	//cout << "Ak4" <<endl;
+        bAK4LeadingPt = (ptLeadingAK4 < 200 );
+        bMass2AK8_1200 = ( *MassLeading2AK8 > 950 and *MassLeading2AK8 < 1400  );
+        bMass2AK8_1700 = ( *MassLeading2AK8 >1400 and *MassLeading2AK8 < 1900  );
+        bSoftDropMassAK8 = (softDropMassLeadAK8 > 60);
+        bTrimmedMassAK8 = ( trimmedMassLeadAK8 > 60);
+
+        brelM = (relM > 0.15 && relM < 0.35);
+        // Rel Pt
+        relpt = (*pt1stAK8 + *pt2ndAK8) / *htak4jets;
+        brelpt = (relpt > 0.65);
+
+
+        bForwardJet = false;
+
+	    fMaxEtaAK4 = 0;
+            for( unsigned int i = 0 ; i < ak4UnmatchedIdx->size() ; i++ )
+            {
+
+                if(jeteta){
+			//cout << jeteta <<"  " << i << endl;
+                  if( fabs((*jeteta)[(*ak4UnmatchedIdx)[i]]) > 1.5 )
+                        bForwardJet = true;
+		  if( fabs((*jeteta)[(*ak4UnmatchedIdx)[i]]) > fMaxEtaAK4)
+			fMaxEtaAK4 = fabs((*jeteta)[(*ak4UnmatchedIdx)[i]]);
+		}
+           }
+
+  histos[ "HT_presel" ]->Fill(*htak4jets);
+  histos[ "pt1stAK8_presel" ]->Fill( *pt1stAK8);
+  histos[ "eta1stAK8_presel" ]->Fill ((*jet8eta)[(*jet8good)[0]]);
+
+  if(bx2AK8Jets) {
+  	histos[ "pt2ndAK8_presel" ]->Fill (*pt2ndAK8);
+  	histos[ "eta2ndAK8_presel" ]->Fill ((*jet8eta)[(*jet8good)[1]]); 
+  }
+
+  histos["ptLeadingAK4_presel"]->Fill(ptLeadingAK4); 
+  histos["etaLeadingAK4_presel"]->Fill(etaLeadingAK4); 
+  histos["pt2ndAK4_presel"]->Fill(pt2ndAK4); 
+  histos["eta2ndAK4_presel"]->Fill(eta2ndAK4); 
+  histos[ "maxetaAK4_presel" ]->Fill(fMaxEtaAK4);
+
+
+  histos [ "BtagsAK4_t_presel" ] -> Fill(tightBTag);
+  histos [ "relM_presel" ] -> Fill(relM);
+
+  if( bx2AK8Jets ){
+  	histos [ "TprimeMass_presel" ]->Fill(*MassLeading2AK8);
+  }
+  histos [ "softDropMass_presel" ] -> Fill(softDropMassLeadAK8);
+
+  if( bx2AK8Jets && bHTag && bTTag && brelM && bSoftDropMassAK8 && bMass2AK8_1200)
+  	histos [ "BtagsAK4_t_sel" ] -> Fill(tightBTag);
+
+  if( bx2AK8Jets && bHTag && bTTag  && bSoftDropMassAK8 && bMass2AK8_1200 && bTight1 )
+  	histos [ "relM_sel" ] -> Fill(relM);
+
+  if( bx2AK8Jets && bHTag && bTTag  && bSoftDropMassAK8 && brelM && bTight1 )
+	  histos [ "TprimeMass_sel" ]->Fill(*MassLeading2AK8); 
+
+  if( bx2AK8Jets && bHTag && bTTag && brelM && bTight1 && bMass2AK8_1200) 
+  	histos [ "softDropMass_sel" ] -> Fill(softDropMassLeadAK8);
+
+  if( bx2AK8Jets && bHTag && bTTag && brelM && bTight1 && bMass2AK8_1200 && bSoftDropMassAK8)
+  	histos[ "maxetaAK4_sel" ]->Fill(fMaxEtaAK4);
+
+//	if(!(b2AK8Jets && bTight1 && bHTag && bTTag && brelM && bSoftDropMassAK8 && bMass2AK8_1700)) return;
+
+        // dPhi 2 AK8
+        
+        bool bdPhiAK8 = false;
+                   if(jet8good->size() > 1) {
+        
+                        float dPhiLeadingAK8 = deltaPhi((*jet8phi)[(*jet8good)[0]],(*jet8phi)[(*jet8good)[1]]);
+                        histos["dPhiLeadingAK8"]->Fill (dPhiLeadingAK8);
+                        bdPhiAK8 = ( dPhiLeadingAK8 > 2);
+        
+                        histos["eta1stAK8"]->Fill( (*jet8eta)[(*jet8good)[0]]);
+                        histos["eta2ndAK8"]->Fill( (*jet8eta)[(*jet8good)[1]]);
+                   }
+        // Rel pt
+        
+        //
     //  if(*nAk4Unmatched < 4) return;
 
       int idx1 = -1;
       int idx2 = -1; 
 
-      float Ht = 0;
 
 //      int iBTags = 0;
 
 //     cout << "Evt: " << evtNum << endl;
-//	cout << "histos1" << endl;	
+	//cout << "histos1" << endl;	
 
 
 
 	histos["AK4Ht"]->Fill(*htak4jets);
+	histos["AK4Ht_reweight"]->Fill(*htak4jets,(*EvtWeight_)[0]);
 	histos["AK8Ht"]->Fill(*htak8jets);
 	histos["AK4trigHt"]->Fill(*htak4trigjets);
 
@@ -483,28 +885,11 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         histos["mass1stAK8"]->Fill(*mass1stAK8);
         histos["mass2ndAK8"]->Fill(*mass2ndAK8);
 
-	// dPhi 2 AK8
-	//
-	bool bdPhiAK8 = false;
-	if(jet8good->size() > 1) {
 
-		float dPhiLeadingAK8 = deltaPhi((*jet8phi)[(*jet8good)[0]],(*jet8phi)[(*jet8good)[1]]);
-
-		histos["dPhiLeadingAK8"]->Fill (dPhiLeadingAK8);
-		bdPhiAK8 = ( dPhiLeadingAK8 > 2);
-
-		histos["eta1stAK8"]->Fill( (*jet8eta)[(*jet8good)[0]]);
-		histos["eta2ndAK8"]->Fill( (*jet8eta)[(*jet8good)[1]]);
-	}
-	// Rel pt
-	
-	float relpt = (*pt1stAK8 + *pt2ndAK8) / Ht;
-
-	histos["relpt"]->Fill(relpt);
+        histos[ "relM" ]->Fill(relM);
 
 
-
-// 	cout << "Jet Pair" << endl;
+ 	//cout << "Jet Pair" << endl;
 	// Determine Mass of closest JetPair.
 	if(idx1 > -1) 
 	{
@@ -534,83 +919,13 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 */
 
 
-
-
-	
-	// 2 AK8 Jets
-	bool b2AK8Jets = (*ngoodAK8Jets > 1);
-
-	// 6+ AK4 Jets
-//	bool b6AK4Jets = (*ngoodAK4Jets > 5 );
-	bool b2AK4Jets = (*nAK4Unmatched > 1 );
-	bool b1AK4Jets = (*nAK4Unmatched > 0 );
-
-	// TMass	
-//	bool bTMass = (( *mass1stAK8 > 160 && *mass1stAK8 < 190) || (*mass2ndAK8 > 160 && *mass2ndAK8 < 190));
-		
-	
-	//HMass
-//	bool bHMass = (( *mass1stAK8 > 110 && *mass1stAK8 < 140) || (*mass2ndAK8 > 110 && *mass2ndAK8 < 140));
-
-	// H Tag
-	bool bHTag = (hjetsIdx_lsubj->size() > 0);
-
-	// T Tag
-	bool bTTag = (tjetsIdx_lsubj->size() > 0);
-
-	//cout << "H T Tag" << endl;
-	// b-tagged jets
-	
-	unsigned looseBTag, mediumBTag, tightBTag;
-	looseBTag = mediumBTag = tightBTag = 0;
-
-	for( unsigned ak4idx : *ak4UnmatchedIdx) {
-		if(bjetsIdx->end() != std::find(bjetsIdx->begin(), bjetsIdx->end(), ak4idx)) {
-	 	    if((*jetCSV)[ak4idx] > .97) { tightBTag++; continue;} 
-	 	    if((*jetCSV)[ak4idx] > .89) { mediumBTag++; continue;} 
-	 	    if((*jetCSV)[ak4idx] > .423) { looseBTag++; continue;} 
-	        }
-	}
-
 	histos["AK4BTags-l"]->Fill(looseBTag);
 	histos["AK4BTags-m"]->Fill(mediumBTag);
 	histos["AK4BTags-t"]->Fill(tightBTag);
 
 	//cout << "BTag " <<endl; 
 
-	bool bLoose1 = (looseBTag > 0);
-//	bool bLoose2 = (looseBTag > 1);
-
-	bool bMedium1 = (mediumBTag > 0);
-//	bool bMedium2 = (mediumBTag > 1);
-
-	bool bTight1 = (tightBTag > 0);
-//	bool bTight2 = (tightBTag > 1);
-
 	
-	// Rel Pt
-	bool brelpt = (relpt > 0.65);
-
-	// Rel M
-	
-	float relM = 0;
-	TLorentzVector J1, J2;
-
-	if(jet8good->size() >= 2) {
-		J1.SetPtEtaPhiM((*jet8pt)[(*jet8good)[0]],
-			 (*jet8eta)[(*jet8good)[0]],
-			 (*jet8phi)[(*jet8good)[0]],
-			 (*jet8M)[(*jet8good)[0]]);
-
-		J2.SetPtEtaPhiM((*jet8pt)[(*jet8good)[1]],
-			 (*jet8eta)[(*jet8good)[1]],
-			 (*jet8phi)[(*jet8good)[1]],
-			 (*jet8M)[(*jet8good)[1]]);
-
-		relM = ((*jet8M)[(*jet8good)[0]] + (*jet8M)[(*jet8good)[1]]) / (J1 + J2).M();
-
-		histos[ "relM" ]->Fill(relM); 
-	}
 /*
 	double mass2AK4 = 0;
 
@@ -630,69 +945,61 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
  	}
 */
 	//cout << "Relm" <<endl;
-	double softDropMassLeadAK8 = (*softDropMassAK8)[(*jet8good)[0]];
-	double trimmedMassLeadAK8 = (*trimmedMassAK8)[(*jet8good)[0]];
-	double ptLeadingAK4,pt2ndAK4,pt3rdAK4,pt4thAK4,pt5thAK4,pt6thAK4;
 
-	ptLeadingAK4=pt2ndAK4=pt3rdAK4=pt4thAK4=pt5thAK4=pt6thAK4 = 0;
 
 
 	if(ak4UnmatchedIdx->size() >0 ){
-		ptLeadingAK4 = (*jetpt)[(*ak4UnmatchedIdx)[0]]; 
 		histos["ptLeadingAK4"]->Fill(ptLeadingAK4);
 		histos["etaLeadingAK4"]->Fill((*jeteta)[(*ak4UnmatchedIdx)[0]]);
 	}
 
 	if(ak4UnmatchedIdx->size() >1 ){
-		pt2ndAK4 = (*jetpt)[(*ak4UnmatchedIdx)[1]]; 
 		histos["pt2ndAK4"]->Fill(pt2ndAK4);
 		histos["eta2ndAK4"]->Fill((*jeteta)[(*ak4UnmatchedIdx)[1]]);
 	}
 	if(ak4UnmatchedIdx->size() >2 ){
-		pt3rdAK4 = (*jetpt)[(*ak4UnmatchedIdx)[2]]; 
 		histos["pt3rdAK4"]->Fill(pt3rdAK4);
 		histos["eta3rdAK4"]->Fill((*jeteta)[(*ak4UnmatchedIdx)[2]]);
 	}
 	if(ak4UnmatchedIdx->size() >3 ){
-		pt4thAK4 = (*jetpt)[(*ak4UnmatchedIdx)[3]]; 
 		histos["pt4thAK4"]->Fill(pt4thAK4);
 		histos["eta4thAK4"]->Fill((*jeteta)[(*ak4UnmatchedIdx)[3]]);
 	}
 	if(ak4UnmatchedIdx->size() > 4 ){
-		pt5thAK4 = (*jetpt)[(*ak4UnmatchedIdx)[4]]; 
 		histos["pt5thAK4"]->Fill(pt5thAK4);
 		histos["eta5thAK4"]->Fill((*jeteta)[(*ak4UnmatchedIdx)[4]]);
 	}
 	if(ak4UnmatchedIdx->size() >5 ){
-		pt6thAK4 = (*jetpt)[(*ak4UnmatchedIdx)[5]]; 
 		histos["pt6thAK4"]->Fill(pt6thAK4);
 		histos["eta6thAK4"]->Fill((*jeteta)[(*ak4UnmatchedIdx)[5]]);
 	}
 
-	bool bAK4LeadingPt = (ptLeadingAK4 < 200 );
-	bool bMass2AK8 = ( *MassLeading2AK8 > 950 and *MassLeading2AK8 < 1400  );
-	bool bSoftDropMassAK8 = (softDropMassLeadAK8 > 60);
-	bool bTrimmedMassAK8 = ( trimmedMassLeadAK8 > 60);
 
-// 	histos["2AK4Mass"]->Fill(mass2AK4);
-	histos["softDropMassAK8"]->Fill(softDropMassLeadAK8);
-	histos["trimmedMassAK8"]->Fill(trimmedMassLeadAK8);
-
-	//cout << " histos x " << endl;
-
-//  h1_["trimmedmak8leading"] -> Fill((goodAK8Jets.at(0)).getTrimmedMass()) ;
-//  h1_["softdropmak8leading"] -> Fill((goodAK8Jets.at(0)).getSoftDropMass()) ;
-
-	bool brelM = (relM > 0.15 && relM < 0.35);
-	
-	bool bForwardJet = false;
-        for( unsigned int i = 0 ; i < ak4UnmatchedIdx->size() ; i++ )
-        {
-
-                if(jeteta)
-                  if( fabs((*jeteta)[(*ak4UnmatchedIdx)[i]]) > 1.5 )
-                        bForwardJet = true;
+	//Histos
+	//
+	// Tagged AK8 as H Cand
+	for ( unsigned hidx : *hjetsIdx_lsubj)
+		histos["HTagCandidateMass"]->Fill((*jet8M)[hidx]); 
+	for (unsigned hidx : *jet8good) {
+		if ((*jet8nSubjets)[hidx] >1 and (*jet8nSubjets)[hidx] < 3 )
+			histos["HCandidateMass"]->Fill((*jet8M)[hidx]);
 	}
+
+	//Htags vs TTags
+	histos2["HvsT"]->Fill(hjetsIdx_lsubj->size(),tjetsIdx_lsubj->size());
+	
+	//Exactly two AK8 histos
+	if ( bx2AK8Jets ) {
+		for( unsigned idx : *ak4UnmatchedIdx) {
+			 histos["2AK8_AK4CSV"]->Fill((*jetCSV)[idx]);
+			 histos["2AK8_AK4pt"]->Fill((*jetpt)[idx]);
+			 histos["2AK8_AK4eta"]->Fill((*jeteta)[idx]);
+			 histos["2AK8_nAK4"]->Fill(ak4UnmatchedIdx->size());
+		}
+	}
+
+
+	//
 
 
 	//std::cout << " main Selection " << std::endl;
@@ -731,10 +1038,14 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		histos[ "Selection" ]->Fill(14) ; 
 	if( b2AK8Jets && bdPhiAK8) 
 		histos[ "Selection" ]->Fill(15) ; 
-	if( b2AK8Jets && bMass2AK8) 
+	if( b2AK8Jets && bMass2AK8_1200) 
 		histos[ "Selection" ]->Fill(16) ; 
-	if( b2AK8Jets && bTight1 && bHTag && bTTag && brelM && bSoftDropMassAK8 && bMass2AK8) 
+	if( b2AK8Jets && bMass2AK8_1700) 
 		histos[ "Selection" ]->Fill(17) ; 
+	if( b2AK8Jets && bTight1 && bHTag && bTTag && brelM && bSoftDropMassAK8 && bMass2AK8_1200) 
+		histos[ "Selection" ]->Fill(18) ; 
+	if( b2AK8Jets && bTight1 && bHTag && bTTag && brelM && bSoftDropMassAK8 && bMass2AK8_1700) 
+		histos[ "Selection" ]->Fill(19) ; 
 /*
         histos[ "Selection2" ]->Fill(0) ;
         if( b2AK8Jets && bHTag )
@@ -799,6 +1110,8 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 histos[ "SidebandB-M" ]->Fill(*MassLeading2AK8) ;
                 histos[ "SidebandB-HT" ]->Fill(*htak4jets) ;
 	 }
+
+	cutTree->Fill();
 }
 
 
@@ -807,8 +1120,87 @@ void
 TprimeAna::beginJob()
 {
 
-//  cout << "begin job";
 
+//  cout << "begin job";
+  cutTree = fs->make<TTree>("cutTree","cut variables");
+
+  cutTree->Branch("softDropMassLeadAK8",&softDropMassLeadAK8,"softDropMassLeadAK8/D");
+  cutTree->Branch("trimmedMassLeadAK8", &trimmedMassLeadAK8, "trimmedMassLeadAK8/D");
+  cutTree->Branch("ptLeadingAK4", &ptLeadingAK4, "ptLeadingAK4/D");
+  cutTree->Branch("etaLeadingAK4", &etaLeadingAK4, "etaLeadingAK4/D");
+  cutTree->Branch("pt2ndAK4", &pt2ndAK4, "pt2ndAK4/D");
+  cutTree->Branch("eta2ndAK4", &eta2ndAK4, "eta2ndAK4/D");
+  cutTree->Branch("pt3rdAK4", &pt3rdAK4, "pt3rdAK4/D");
+  cutTree->Branch("eta3rdAK4", &eta3rdAK4, "eta3rdAK4/D");
+  cutTree->Branch("pt4thAK4", &pt4thAK4, "pt4thAK4/D");
+  cutTree->Branch("eta4thAK4", &eta4thAK4, "eta4thAK4/D");
+  cutTree->Branch("pt5thAK4", &pt5thAK4, "pt5thAK4/D");
+  cutTree->Branch("eta5thAK4", &eta5thAK4, "eta5thAK4/D");
+  cutTree->Branch("pt6thAK4", &pt6thAK4, "pt6thAK4/D");
+  cutTree->Branch("eta6thAK4", &eta6thAK4, "eta6thAK4/D");
+  cutTree->Branch("massTprime", &massTprime, "massTprime/D");
+ 
+  ptAK8 = new std::vector<double>;
+  etaAK8 = new std::vector<double>;
+  subjAK8 = new std::vector<unsigned>;
+  AK8Idx = new std::vector<unsigned>;
+
+  cutTree->Branch("nAK8", &nAK8, "nAK8/i");
+  cutTree->Branch("ptAK8", &ptAK8); 
+  cutTree->Branch("etaAK8", &etaAK8);
+  cutTree->Branch("AK8Idx", &AK8Idx); 
+
+  cutTree->Branch("subjAK8", &subjAK8);
+
+  EvtWeight = new std::vector<double>;
+
+  cutTree->Branch("EvtWeight", &EvtWeight);
+
+  idxHTag = new std::vector<unsigned>;
+  idxTTag = new std::vector<unsigned>;
+  idxWTag = new std::vector<unsigned>;
+  idxbTag = new std::vector<unsigned>;
+
+  cutTree->Branch("HTagIdx", &idxHTag);  
+  cutTree->Branch("TTagIdx", &idxTTag);  
+  cutTree->Branch("WTagIdx", &idxTTag);  
+  cutTree->Branch("bTagIdx", &idxbTag);
+
+  cutTree->Branch("b2AK8Jets",&b2AK8Jets,"b2AK8Jets/O");
+  cutTree->Branch("bx2AK8Jets",&bx2AK8Jets,"bx2AK8Jets/O");
+  cutTree->Branch("b6AK4Jets",&b6AK4Jets,"b6AK4Jets/O");
+  cutTree->Branch("b2AK4Jets",&b2AK4Jets,"b2AK4Jets/O");
+  cutTree->Branch("b1AK4Jets",&b1AK4Jets,"b1AK4Jets/O");
+  cutTree->Branch("bTMass",&bTMass,"bTMass/O");
+  cutTree->Branch("bHMass",&bHMass,"bHMass/O");
+  cutTree->Branch("bHTag",&bHTag,"bHTag/O");
+  cutTree->Branch("bTTag",&bTTag,"bTTag/O");
+  cutTree->Branch("bTTagSubj",&bTTagSubj,"bTTagSubj/O");
+  cutTree->Branch("bLoose1",&bLoose1,"bLoose1/O");
+  cutTree->Branch("bMedium1",&bMedium1,"bMedium1/O");
+  cutTree->Branch("bTight1",&bTight1,"bTight1/O");
+  cutTree->Branch("bAK4LeadingPt",&bAK4LeadingPt,"bAK4LeadingPt/O");
+  cutTree->Branch("bMass2AK8_1200",&bMass2AK8_1200,"bMass2AK8_1200/O");
+  cutTree->Branch("bMass2AK8_1700",&bMass2AK8_1700,"bMass2AK8_1700/O");
+  cutTree->Branch("bSoftDropMassAK8",&bSoftDropMassAK8,"bSoftDropMassAK8/O");
+  cutTree->Branch("bTrimmedMassAK8",&bTrimmedMassAK8,"bTrimmedMassAK8/O");
+  cutTree->Branch("brelM",&brelM,"brelM/O");
+  cutTree->Branch("brelpt",&brelpt,"brelpt/O");
+  cutTree->Branch("bForwardJet",&bForwardJet,"bForwardJet/O");
+
+  cutTree->Branch("relM",&relM,"relM/D");
+  cutTree->Branch("relpt",&relpt,"relpt/D");
+  cutTree->Branch("fMaxEtaAK4",&fMaxEtaAK4, "fMaxEtaAK4/D");
+  cutTree->Branch("htak4",&htak4, "htak4/D");
+
+  bTrigger = new std::vector<bool>;
+  cutTree->Branch("bTrigger",&bTrigger);
+
+  cutTree->Branch("looseBTag", &looseBTag, "looseBTag/i");
+  cutTree->Branch("mediumBTag", &mediumBTag, "mediumBTag/i");
+  cutTree->Branch("tightBTag", &tightBTag, "tightBTag/i");
+
+ 
 
   histos[ "nBTags1" ] = fs->make<TH1F>( "nBTags1", "# of subjet BTags in jet 1" , 5, 0, 5);
   histos[ "nBTags2" ] = fs->make<TH1F>( "nBTags2", "# of subjet BTags in jet 2" , 5, 0, 5);
@@ -826,8 +1218,9 @@ TprimeAna::beginJob()
   histos[ "Selection2" ] = fs->make<TH1F>( "Selection2" , "Selection2" , 27, 0 ,27); 
   histos[ "AK4JetPt" ] = fs->make<TH1F>( "pt"  , "p_{t}", 500,  0., 1000. );
   histos[ "AK4JetHt" ] = fs->make<TH1F>( "Ht"  , "H_{t}", 1000,  0., 2000. );
-  histos[ "AK4Ht" ] = fs->make<TH1F>( "AK4 Ht"  , "H_{t}", 1000,  0., 2000. );
-  histos[ "AK4trigHt" ] = fs->make<TH1F>( "AK4 Ht"  , "H_{t}", 1000,  0., 2000. );
+  histos[ "AK4Ht" ] = fs->make<TH1F>( "AK4Ht"  , "H_{t}", 1000,  0., 2000. );
+  histos[ "AK4Ht_reweight"]= fs->make<TH1F>( "AK4Ht_rew"  , "H_{t}", 1000,  0., 2000. );
+  histos[ "AK4trigHt" ] = fs->make<TH1F>( "AK4 trig Ht"  , "H_{t}", 1000,  0., 2000. );
   histos[ "AK8Ht" ] = fs->make<TH1F>( "AK8 Ht"  , "H_{t}", 1000,  0., 2000. );
   histos[ "AK4JetdR" ] = fs->make<TH1F>( "jetdR" , "dR between Jets", 50, 0. ,5.);
   histos[ "AK4JetPairMass" ] = fs->make<TH1F>( "jetPairMass"  , "Jet Pair Mass", 1000,  0., 2000. );
@@ -862,6 +1255,33 @@ TprimeAna::beginJob()
   histos[ "ngoodAK4Jets" ] = fs->make<TH1F>( "ngoodAK4Jets"  , "AK4 Jets after sel", 20,  0., 20. );
   histos[ "ngoodAK8Jets" ] = fs->make<TH1F>( "ngoodAK8Jets"  , "AK8 Jets after sel", 20,  0., 20. );
   histos[ "ngoodAK4Jets_Unm"] = fs->make<TH1F>( "ngoodAK4Jets_Unm"  , "AK4 Jets (unmatched) after sel", 20,  0., 20. );
+  histos[ "ngoodAK4Jets_Unm_presel"] = fs->make<TH1F>( "ngoodAK4Jets_Unm_presel"  , "AK4 Jets (unmatched) after presel", 20,  0., 20. );
+
+  histos[ "HT_presel" ] = fs->make<TH1F>( "HT_presel" ,"H_{t} after preselection", 1000,  0., 2000. );
+  histos[ "pt1stAK8_presel" ] = fs->make<TH1F>( "pt1stAK8_presel" ,"p_{t} Leading AK8 after preselection", 1000,  0., 2000. );
+  histos[ "eta1stAK8_presel" ] = fs->make<TH1F>( "eta1stAK8_presel","eta Leading AK8 after preselection ",50,  -5., 5.);
+  histos[ "pt2ndAK8_presel" ] = fs->make<TH1F>( "pt2ndAK8_presel" ,"p_{t} 2nd AK8 after preselection", 1000,  0., 2000. );
+  histos[ "eta2ndAK8_presel" ] = fs->make<TH1F>( "eta2ndAK8_presel","eta 2nd AK8 after preselection ",50,  -5., 5.);
+
+  // AK4 stuff
+  histos["ptLeadingAK4_presel"] = fs->make<TH1F>( "ptLeadingAK4_presel","p_{t} Leading AK4 after preselection",1000,  0., 2000.);
+  histos["etaLeadingAK4_presel"] = fs->make<TH1F>( "etaLeadingAK4_presel","eta Leading AK4 after preselection",50,  -5., 5.);
+  histos["pt2ndAK4_presel"] = fs->make<TH1F>( "pt2ndAK4_presel","p_{t} 2nd AK4 after preselection",1000,  0., 2000.);
+  histos["eta2ndAK4_presel"] = fs->make<TH1F>( "eta2ndAK4_presel","eta 2nd AK4 after preselection",50,  -5., 5.);
+  histos[ "maxetaAK4_presel" ]= fs->make<TH1F>("maxetaAK4_presel","Max eta for AK4 after preselection",50, 0. ,5. );
+  
+
+
+  histos [ "BtagsAK4_t_presel" ] = fs->make<TH1F>("BtagsAK4_t_presel"  , "# of Tight Btags (AK4)", 100,  0., 10. );
+  histos [ "relM_presel" ] = fs->make<TH1F>("relM_presel" , "Relative Mass (AK8)" , 100, 0 ,1); 
+  histos [ "TprimeMass_presel" ] = fs->make<TH1F>("TprimeMass_presel", "Tprime Candidate Mass (2AK8)", 1000,0,2000);
+  histos [ "softDropMass_presel" ] = fs->make<TH1F>("softDropMass_presel", "SoftDropMass (Leading AK8)", 1000,0,2000);
+
+  histos [ "BtagsAK4_t_sel" ] = fs->make<TH1F>("BtagsAK4_t_sel"  , "# of Tight Btags (AK4)", 100,  0., 10. );
+  histos [ "relM_sel" ] = fs->make<TH1F>("relM_sel" , "Relative Mass (AK8)" , 100, 0 ,1); 
+  histos [ "TprimeMass_sel" ] = fs->make<TH1F>("TprimeMass_sel", "Tprime Candidate Mass (2AK8)", 1000,0,2000);
+  histos [ "softDropMass_sel" ] = fs->make<TH1F>("softDropMass_sel", "SoftDropMass (Leading AK8)",1000, 0, 2000);
+  histos[ "maxetaAK4_sel" ]= fs->make<TH1F>("maxetaAK4_sel","Max eta for AK4 after Selection",50, 0. ,5. );
 
 
  // histos[ "nlooseBTaggedAK4Jets" ] = fs->make<TH1F>( "nlooseBTaggedAK4Jets"  , "Jets after sel", 10,  0., 10.  );
@@ -899,6 +1319,15 @@ TprimeAna::beginJob()
 
   histos[ "DEstimate-HT" ]= fs->make<TH1F>( "DEstimate-HT","DEstimate-HT" ,1000,  0., 4000.);
 
+  histos[ "HTagCandidateMass" ] = fs->make<TH1F>( "HTagCandidateMass", "Higgs Candidate Mass ( Tagger )",300,0,300 );
+  histos[ "HCandidateMass" ] = fs->make<TH1F>( "HCandidateMass", "Higgs Candidate Mass ( AK8 ( 2subjets )",300,0,300 );
+
+  histos["2AK8_AK4CSV"] = fs->make<TH1F>( "2AK8_AK4CSV", "AK4 CSV Unmatched (2AK8)",100,0,1 );
+  histos["2AK8_AK4pt"] = fs->make<TH1F>( "2AK8_AK4pt", "AK4 pt Unmatched (2AK8)",1000,0,2000 );
+  histos["2AK8_AK4eta"] = fs->make<TH1F>( "2AK8_AK4eta", "AK4 eta Unmatched (2AK8)",100,-5,5 );
+  histos["2AK8_nAK4"] =fs->make<TH1F>( "2AK8_nAK4", "Number of AK4 Unmatched (2AK8)",20,0,20 );
+
+  histos2["HvsT"] = fs->make<TH2F>( "HvsT", "HTags vs. TTags", 5, 0, 5,5,0,5);
 
   histos[ "Selection2" ]->GetXaxis()->SetBinLabel(1,"Preselection" );
   histos[ "Selection2" ]->GetXaxis()->SetBinLabel(2,"b2AK8Jets" );
@@ -940,10 +1369,13 @@ TprimeAna::beginJob()
   histos[ "Selection" ]->GetXaxis()->SetBinLabel(15,"b2AK8Jets && b1AK4Jets");
 
   histos[ "Selection" ]->GetXaxis()->SetBinLabel(16,"b2AK8Jets && bdPhiAK8");
-  histos[ "Selection" ]->GetXaxis()->SetBinLabel(17,"b2AK8Jets && bMass2AK8");
+  histos[ "Selection" ]->GetXaxis()->SetBinLabel(17,"b2AK8Jets && bMass2AK8_1200");
+  histos[ "Selection" ]->GetXaxis()->SetBinLabel(18,"b2AK8Jets && bMass2AK8_1700");
 
-  histos[ "Selection" ]->GetXaxis()->SetBinLabel(18,"b2AK8Jets && bTight1 && bdPhiAK8 && bHTag && bTTag && brelM && bSoftDropMassAK8 && bMass2AK8");
+  histos[ "Selection" ]->GetXaxis()->SetBinLabel(19,"b2AK8Jets && bTight1 && bHTag && bTTag && brelM && bSoftDropMassAK8 && bMass2AK8_1200");
+  histos[ "Selection" ]->GetXaxis()->SetBinLabel(20,"b2AK8Jets && bTight1 && bHTag && bTTag && brelM && bSoftDropMassAK8 && bMass2AK8_1700");
 
+  
 
 }
 
