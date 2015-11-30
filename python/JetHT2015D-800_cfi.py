@@ -1,0 +1,47 @@
+import FWCore.ParameterSet.Config as cms
+
+
+source = cms.Source("PoolSource",
+    # replace 'myfile.root' with the source file you want to use
+    fileNames = cms.untracked.vstring(
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_1.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_2.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_3.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_4.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_5.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_6.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_7.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_8.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_9.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_10.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_11.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_12.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_13.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_14.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_15.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_16.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_17.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_18.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_19.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_20.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_21.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_22.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_23.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_24.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_25.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_26.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_27.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_28.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_29.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_30.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_31.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_32.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_33.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_34.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_35.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_36.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_37.root',
+        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-887Silver-Presel/151102_160539/0000/PreselEvents_JetHT2015D-800_38.root',
+    )
+)
+
