@@ -17,11 +17,12 @@ process = cms.Process("Analyze")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+#process.MessageLogger = cms.Service("MessageLogger", destinations   = cms.untracked.vstring('messages'))
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.load("UserCode.TprimeAna."+options.dataset+"_cfi")
-process.load("Analysis.VLQAna.HbbCandidateProducer_cfi")
+#process.load("Analysis.VLQAna.HbbCandidateProducer_cfi")
 process.load("UserCode.AnaVars.AnaVars_cfi")
 
 
@@ -32,8 +33,9 @@ process.analyze = cms.EDAnalyzer('TprimeAna',
 	    trigNameLabel              = cms.InputTag("TriggerUserData", "triggerNameTree"),
             trigBitLabel               = cms.InputTag("TriggerUserData", "triggerBitTree"),
             isData 			= cms.bool(False),
-#       	    hltPaths                   = cms.vstring ( ".*")
-       	    hltPaths                   = cms.vstring ( "HLT_PFHT800.*")
+            isTTJets 			= cms.bool(False),
+	    hltPaths                   = cms.vstring ( ".*")
+#	    hltPaths                   = cms.vstring ( "HLT_PFHT800.*")
  
 )
 

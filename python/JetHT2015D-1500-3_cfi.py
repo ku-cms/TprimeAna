@@ -36,8 +36,8 @@ source = cms.Source("PoolSource",
         'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-Prompt-Presel/151103_202940/0000/PreselEvents_JetHT2015D-Prompt_6.root',
         'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-Prompt-Presel/151103_202940/0000/PreselEvents_JetHT2015D-Prompt_7.root',
         'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-Prompt-Presel/151103_202940/0000/PreselEvents_JetHT2015D-Prompt_8.root',
-        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-Prompt-Presel/151103_202940/0000/PreselEvents_JetHT2015D-Prompt_9.root',
-        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-Prompt-Presel/151103_202940/0000/PreselEvents_JetHT2015D-Prompt_10.root',
+#        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-Prompt-Presel/151103_202940/0000/PreselEvents_JetHT2015D-Prompt_9.root',
+#        'file:/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/stringer/TPrime/JetHT/crab_JetHT2015D-Prompt-Presel/151103_202940/0000/PreselEvents_JetHT2015D-Prompt_10.root',
     )
 )
 
