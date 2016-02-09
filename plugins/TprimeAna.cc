@@ -103,6 +103,9 @@ class TprimeAna : public edm::EDAnalyzer {
 	std::vector<double> * MAK4;
 	std::vector<double> * SoftDropMassAK8;
 	std::vector<double> * PrunedMassAK8;
+	std::vector<double> * minMAK8;
+
+
 	std::vector<double> * tau1AK8;
 	std::vector<double> * tau2AK8;
 	std::vector<double> * tau3AK8;
@@ -119,11 +122,17 @@ class TprimeAna : public edm::EDAnalyzer {
 	std::vector<unsigned> * idxHTag;
 	std::vector<unsigned> * idxHTagSB0;
 	std::vector<unsigned> * idxHTagSB1;
+	std::vector<unsigned> * idxHTag100;
+	std::vector<unsigned> * idxHTag100SB0;
+	std::vector<unsigned> * idxHTag100SB1;
 //	std::vector<unsigned> * idxTTagsub;
 //	std::vector<unsigned> * idxTTagsub2;
 //	std::vector<unsigned> * idxTTag;
 //	std::vector<unsigned> * idxTTag03sub;
 	std::vector<unsigned> * idxTTag03;
+	std::vector<unsigned> * idxTTag03std;
+	std::vector<unsigned> * idxTTag03mm;
+	std::vector<unsigned> * idxTTag03sj;
 	std::vector<unsigned> * idxTTag03SB0;
 //	std::vector<unsigned> * idxTTag10;
 //	std::vector<unsigned> * idxTTag30;
@@ -273,6 +282,7 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       edm::Handle<std::vector<float> >  mh_jetAK8FilteredMass;
       edm::Handle<std::vector<float> >  mh_jetAK8TrimmedMass    ;
       edm::Handle<std::vector<float> >  mh_jetAK8PrunedMass     ;
+      edm::Handle<std::vector<float> >  mh_jetAK8minMass     ;
       edm::Handle<std::vector<float> >  mh_jetAK8SoftDropMass   ; 
 
       edm::Handle<std::vector<float> > mh_subjetAK8Pt;
@@ -326,18 +336,14 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       edm::Handle<std::vector<unsigned> > mh_ak4UnmatchedIdx03;
       edm::Handle<std::vector<unsigned> > mh_ak4UnmatchedIdx10;
       edm::Handle<std::vector<unsigned> > mh_ak4UnmatchedIdx30;
-      edm::Handle<std::vector<unsigned> > mh_tjetsIdxsub;
-      edm::Handle<std::vector<unsigned> > mh_tjetsIdxsub2;
-      edm::Handle<std::vector<unsigned> > mh_tjetsIdx;
-      edm::Handle<std::vector<unsigned> > mh_tjetsIdx03sub;
+      edm::Handle<std::vector<unsigned> > mh_tjetsIdx03std;
+      edm::Handle<std::vector<unsigned> > mh_tjetsIdx03mm;
+      edm::Handle<std::vector<unsigned> > mh_tjetsIdx03sj;
       edm::Handle<std::vector<unsigned> > mh_tjetsIdx03;
       edm::Handle<std::vector<unsigned> > mh_tjetsIdx03SB0;
-      edm::Handle<std::vector<unsigned> > mh_tjetsIdx10;
-      edm::Handle<std::vector<unsigned> > mh_tjetsIdx30;
-      edm::Handle<std::vector<unsigned> > mh_tjetsIdx0;
-      edm::Handle<std::vector<unsigned> > mh_tjetsIdx1;
-      edm::Handle<std::vector<unsigned> > mh_tjetsIdx2;
-      edm::Handle<std::vector<unsigned> > mh_tjetsIdx3;
+      edm::Handle<std::vector<unsigned> > mh_hjetsIdx100;
+      edm::Handle<std::vector<unsigned> > mh_hjetsIdx100SB0;
+      edm::Handle<std::vector<unsigned> > mh_hjetsIdx100SB1;
       edm::Handle<std::vector<unsigned> > mh_hjetsIdx;
       edm::Handle<std::vector<unsigned> > mh_hjetsIdxSB0;
       edm::Handle<std::vector<unsigned> > mh_hjetsIdxSB1;
@@ -389,7 +395,10 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 //      iEvent.getByLabel("anavars", "ak4UnmatchedIdx30",mh_ak4UnmatchedIdx30);
 //      iEvent.getByLabel("anavars", "tjetsIdx03sub",mh_tjetsIdx03sub);
       iEvent.getByLabel("anavars", "tjetsIdx03",mh_tjetsIdx03);
-      iEvent.getByLabel("anavars", "tjetsIdx03sb0",mh_tjetsIdx03SB0);
+      iEvent.getByLabel("anavars", "tjetsIdx03sj",mh_tjetsIdx03sj);
+      iEvent.getByLabel("anavars", "tjetsIdx03mm",mh_tjetsIdx03mm);
+      iEvent.getByLabel("anavars", "tjetsIdx03std",mh_tjetsIdx03std);
+      iEvent.getByLabel("anavars", "tjetsIdx03SB0",mh_tjetsIdx03SB0);
 //      iEvent.getByLabel("anavars", "tjetsIdx10",mh_tjetsIdx10);
 //      iEvent.getByLabel("anavars", "tjetsIdx30",mh_tjetsIdx30);
 //      iEvent.getByLabel("anavars", "tjetsIdxsub2",mh_tjetsIdxsub2);
@@ -402,6 +411,9 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       iEvent.getByLabel("anavars", "hjetsIdx",mh_hjetsIdx);
       iEvent.getByLabel("anavars", "hjetsIdxSB0",mh_hjetsIdxSB0);
       iEvent.getByLabel("anavars", "hjetsIdxSB1",mh_hjetsIdxSB1);
+      iEvent.getByLabel("anavars", "hjetsIdx100",mh_hjetsIdx100);
+      iEvent.getByLabel("anavars", "hjetsIdx100SB0",mh_hjetsIdx100SB0);
+      iEvent.getByLabel("anavars", "hjetsIdx100SB1",mh_hjetsIdx100SB1);
       iEvent.getByLabel("anavars", "wjetsIdx",mh_wjetsIdx);
       
 
@@ -450,6 +462,7 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       iEvent.getByLabel("jetsAK8", "jetAK8filteredMass"    , mh_jetAK8FilteredMass   );
       iEvent.getByLabel("jetsAK8", "jetAK8trimmedMass"    , mh_jetAK8TrimmedMass   );
       iEvent.getByLabel("jetsAK8", "jetAK8prunedMass"    , mh_jetAK8PrunedMass   );
+      iEvent.getByLabel("jetsAK8", "jetAK8minmass"    , mh_jetAK8minMass   );
       iEvent.getByLabel("jetsAK8", "jetAK8softDropMass"    , mh_jetAK8SoftDropMass   );
 
       iEvent.getByLabel("jetsAK8", "jetAK8tau1", mh_jetAK8tau1);
@@ -521,6 +534,7 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       const std::vector<float> * softDropMassAK8 = mh_jetAK8SoftDropMass.product();
       const std::vector<float> * trimmedMassAK8 = mh_jetAK8TrimmedMass.product();
       const std::vector<float> * prunedMassAK8 = mh_jetAK8PrunedMass.product();
+      const std::vector<float> * minmassAK8 = mh_jetAK8minMass.product();
       const std::vector<float> * jet8Tau1 = mh_jetAK8tau1.product();	
       const std::vector<float> * jet8Tau2 = mh_jetAK8tau2.product();	
       const std::vector<float> * jet8Tau3 = mh_jetAK8tau3.product();	
@@ -536,6 +550,9 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 
       const std::vector<unsigned> * tjetsIdx03 = mh_tjetsIdx03.product();
+      const std::vector<unsigned> * tjetsIdx03sj = mh_tjetsIdx03sj.product();
+      const std::vector<unsigned> * tjetsIdx03mm = mh_tjetsIdx03mm.product();
+      const std::vector<unsigned> * tjetsIdx03std = mh_tjetsIdx03std.product();
       const std::vector<unsigned> * tjetsIdx03SB0 = mh_tjetsIdx03SB0.product();
 //      const std::vector<unsigned> * tjetsIdx03sub = mh_tjetsIdx03sub.product();
 //      const std::vector<unsigned> * tjetsIdx10 = mh_tjetsIdx10.product();
@@ -551,6 +568,9 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       const std::vector<unsigned> * hjetsIdx = mh_hjetsIdx.product();
       const std::vector<unsigned> * hjetsIdxSB0 = mh_hjetsIdxSB0.product();
       const std::vector<unsigned> * hjetsIdxSB1 = mh_hjetsIdxSB1.product();
+      const std::vector<unsigned> * hjetsIdx100 = mh_hjetsIdx100.product();
+      const std::vector<unsigned> * hjetsIdx100SB0 = mh_hjetsIdx100SB0.product();
+      const std::vector<unsigned> * hjetsIdx100SB1 = mh_hjetsIdx100SB1.product();
       const std::vector<unsigned> * wjetsIdx = mh_wjetsIdx.product();
 
       const std::vector<unsigned> * bjetsIdx = mh_bjetsIdx.product();
@@ -611,13 +631,15 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 
 
-	//cout << "Clear" << endl;
    nAK8 = (*ngoodAK8Jets);
 
    tau1AK8->clear();	
    tau2AK8->clear();	
    tau3AK8->clear();	
    subjAK8->clear();
+   idxHTag100->clear();
+   idxHTag100SB0->clear();
+   idxHTag100SB1->clear();
    idxHTag->clear();
    idxHTagSB0->clear();
    idxHTagSB1->clear();
@@ -625,6 +647,9 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 //   idxTTagsub->clear();
 //   idxTTagsub2->clear();
    idxTTag03->clear();
+   idxTTag03std->clear();
+   idxTTag03mm->clear();
+   idxTTag03sj->clear();
    idxTTag03SB0->clear();
 //   idxTTag03sub->clear();
 //   idxTTag10->clear();
@@ -639,6 +664,7 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    MAK8->clear();
    SoftDropMassAK8->clear();
    PrunedMassAK8->clear();
+   minMAK8->clear();
    ptAK4->clear();
    etaAK4->clear();
    phiAK4->clear();
@@ -671,6 +697,7 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       	    sj2IdxAK8->push_back((*jetAK8topsubjetIndex2)[i]); 
       	    sj3IdxAK8->push_back((*jetAK8topsubjetIndex3)[i]); 
 	    PrunedMassAK8->push_back((*prunedMassAK8)[i]);
+	    minMAK8->push_back((*minmassAK8)[i]);
 	    SoftDropMassAK8->push_back((*softDropMassAK8)[i]);
 	    tau1AK8->push_back((*jet8Tau1)[i]);
 	    tau2AK8->push_back((*jet8Tau2)[i]);
@@ -683,14 +710,17 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	    phiAK4->push_back((*jet4phi)[i]);
 	    MAK4->push_back((*jet4M)[i]);
 	}
-	//cout << "AK8" <<endl;
+//	cout << "AK8" <<endl;
 //	ak8s->Load(jet8pt,jet8eta,jet8phi,jet8M);
 
 	sjCSVV1AK8->reserve(subjet8CSVV1->size());
 	sjCSVAK8->reserve(subjet8CSV->size());
 
-	//cout << "reserve"<< endl;
+//	cout << "reserve"<< endl;
 
+	idxHTag100->reserve(hjetsIdx100->size());
+	idxHTag100SB0->reserve(hjetsIdx100SB0->size());
+	idxHTag100SB1->reserve(hjetsIdx100SB1->size());
 	idxHTag->reserve(hjetsIdx->size());
 	idxHTagSB0->reserve(hjetsIdxSB0->size());
 	idxHTagSB1->reserve(hjetsIdxSB1->size());
@@ -699,6 +729,9 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 //	idxTTag->reserve(tjetsIdx->size());
 //	idxTTag03sub->reserve(tjetsIdx03sub->size());
 	idxTTag03->reserve(tjetsIdx03->size());
+	idxTTag03std->reserve(tjetsIdx03std->size());
+	idxTTag03mm->reserve(tjetsIdx03mm->size());
+	idxTTag03sj->reserve(tjetsIdx03sj->size());
 	idxTTag03SB0->reserve(tjetsIdx03SB0->size());
 //	idxTTag10->reserve(tjetsIdx10->size());
 //	idxTTag30->reserve(tjetsIdx30->size());
@@ -735,6 +768,15 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	std::copy(ak4UnmatchedIdx30->begin(), ak4UnmatchedIdx30->end(),
               std::back_inserter(*AK4UnmatchedIdx30));
 */
+	std::copy(hjetsIdx100->begin(), hjetsIdx100->end(),
+              std::back_inserter(*idxHTag100));
+
+	std::copy(hjetsIdx100SB0->begin(), hjetsIdx100SB0->end(),
+              std::back_inserter(*idxHTag100SB0));
+
+	std::copy(hjetsIdx100SB1->begin(), hjetsIdx100SB1->end(),
+              std::back_inserter(*idxHTag100SB1));
+
 	std::copy(hjetsIdx->begin(), hjetsIdx->end(),
               std::back_inserter(*idxHTag));
 
@@ -749,6 +791,15 @@ TprimeAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	std::copy(tjetsIdx03->begin(), tjetsIdx03->end(),
               std::back_inserter(*idxTTag03));
+
+	std::copy(tjetsIdx03std->begin(), tjetsIdx03std->end(),
+              std::back_inserter(*idxTTag03std));
+
+	std::copy(tjetsIdx03mm->begin(), tjetsIdx03mm->end(),
+              std::back_inserter(*idxTTag03mm));
+
+	std::copy(tjetsIdx03sj->begin(), tjetsIdx03sj->end(),
+              std::back_inserter(*idxTTag03sj));
 
 	std::copy(tjetsIdx03SB0->begin(), tjetsIdx03SB0->end(),
               std::back_inserter(*idxTTag03SB0));
@@ -910,6 +961,8 @@ TprimeAna::beginJob()
   MAK8 = new std::vector<double>;
   MAK4 = new std::vector<double>;
   SoftDropMassAK8 = new std::vector<double>;
+  PrunedMassAK8 = new std::vector<double>;
+  minMAK8 = new std::vector<double>;
   tau1AK8 = new std::vector<double>;
   tau2AK8 = new std::vector<double>;
   tau3AK8 = new std::vector<double>;
@@ -936,6 +989,7 @@ TprimeAna::beginJob()
   cutTree->Branch("MAK4", &MAK4);
   cutTree->Branch("SoftDropMassAK8", &SoftDropMassAK8);
   cutTree->Branch("PrunedMassAK8", &PrunedMassAK8);
+  cutTree->Branch("minMassAK8", &minMAK8);
   cutTree->Branch("tau1AK8", &tau1AK8);
   cutTree->Branch("tau2AK8", &tau2AK8);
   cutTree->Branch("tau3AK8", &tau3AK8);
@@ -972,6 +1026,9 @@ TprimeAna::beginJob()
   idxHTag = new std::vector<unsigned>;
   idxHTagSB0 = new std::vector<unsigned>;
   idxHTagSB1 = new std::vector<unsigned>;
+  idxHTag100 = new std::vector<unsigned>;
+  idxHTag100SB0 = new std::vector<unsigned>;
+  idxHTag100SB1 = new std::vector<unsigned>;
 //  idxTTag = new std::vector<unsigned>;
 //  idxTTagsub = new std::vector<unsigned>;
 //  idxTTagsub2 = new std::vector<unsigned>;
@@ -980,6 +1037,9 @@ TprimeAna::beginJob()
 //  idxTTag2 = new std::vector<unsigned>;
 //  idxTTag3 = new std::vector<unsigned>;
   idxTTag03 = new std::vector<unsigned>;
+  idxTTag03std = new std::vector<unsigned>;
+  idxTTag03sj = new std::vector<unsigned>;
+  idxTTag03mm = new std::vector<unsigned>;
   idxTTag03SB0 = new std::vector<unsigned>;
 //  idxTTag03sub = new std::vector<unsigned>;
 //  idxTTag10 = new std::vector<unsigned>;
@@ -989,6 +1049,9 @@ TprimeAna::beginJob()
 
   cutTree->Branch("WTagIdx", &idxWTag);  
   cutTree->Branch("bTagIdx", &idxbTag);
+  cutTree->Branch("HTagIdx100", &idxHTag100);
+  cutTree->Branch("HTagIdx100SB0", &idxHTag100SB0);
+  cutTree->Branch("HTagIdx100SB1", &idxHTag100SB1);
   cutTree->Branch("HTagIdx", &idxHTag);
   cutTree->Branch("HTagIdxSB0", &idxHTagSB0);
   cutTree->Branch("HTagIdxSB1", &idxHTagSB1);
@@ -996,6 +1059,9 @@ TprimeAna::beginJob()
 //  cutTree->Branch("TTagIdxsub", &idxTTagsub);
 //  cutTree->Branch("TTagIdxsub2", &idxTTagsub2);
   cutTree->Branch("TTagIdx03", &idxTTag03);
+  cutTree->Branch("TTagIdx03std", &idxTTag03std);
+  cutTree->Branch("TTagIdx03mm", &idxTTag03mm);
+  cutTree->Branch("TTagIdx03sj", &idxTTag03sj);
   cutTree->Branch("TTagIdx03SB0", &idxTTag03SB0);
 //  cutTree->Branch("TTagIdx03sub", &idxTTag03sub);
 //  cutTree->Branch("TTagIdx10", &idxTTag10);
