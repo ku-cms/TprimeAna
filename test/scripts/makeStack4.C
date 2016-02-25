@@ -93,7 +93,7 @@ double WeightHT(double HT)
 }
 
 
-void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TH1D*,TString> &hSignal, TH1D * hQCD = 0, TH1D * histW = 0, TH1D * histTT = 0 )
+void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TString,TH1D*> &hSignal, TH1D * hQCD = 0, TH1D * histW = 0, TH1D * histTT = 0, TH1D * histST = 0 )
 {
 
 
@@ -122,10 +122,6 @@ void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TH1D*,TString>
   	latex.SetTextSize(.04);
 
 
-
-
-
-
 	if(hQCD) hQCD->SetFillColor(kCyan);
 	if(histW) histW->SetFillColor(kGreen);
 	if(histTT) histTT->SetFillColor(kBlue);
@@ -143,21 +139,23 @@ void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TH1D*,TString>
 	
 	// Don't draw stack if only hBack provided.
 	
-	if(histW && histTT && hQCD)  {
+	if(histW && histTT && hQCD && histST)  {
 	
 		THStack * hs = new THStack( "hsBack",hBack->GetTitle());
 	
 		histW->SetMarkerStyle(0);
 		histTT->SetMarkerStyle(0);
 		hQCD->SetMarkerStyle(0);
+		histST->SetMarkerStyle(0);
 		
 		hs->Add(histW,"hist");
 		hs->Add(histTT,"hist");
 		hs->Add(hQCD,"hist");
+		hs->Add(histST,"hist");
 
-		cout << "QCD = " << hQCD->Integral(0,1000) << endl;
-		cout << "TTJets = " << histTT->Integral(0,1000) << endl;
-		cout << "WJets = " << histW->Integral(0,1000) << endl;
+		//cout << "QCD = " << hQCD->Integral(0,1000) << endl;
+		//cout << "TTJets = " << histTT->Integral(0,1000) << endl;
+		//cout << "WJets = " << histW->Integral(0,1000) << endl;
 	
 		hs->SetMaximum(yMax*1.6);
 		hs->SetMinimum(0.01);
@@ -207,14 +205,14 @@ void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TH1D*,TString>
 	//Draw signal histos from vector.
 	int cnt = 0;
 	if ( hSignal.size() > 0 ) {
-	    for( std::map< TH1D *, TString >::iterator it = hSignal.begin() ; it != hSignal.end(); it++ ) {
-		it->first->SetLineColor(kRed+cnt);
-		it->first->SetMarkerStyle(0);
-		it->first->Draw("hist same"); 
-		leg->AddEntry(it->first,it->second);
+	    for( std::map< TString, TH1D* >::iterator it = hSignal.begin() ; it != hSignal.end(); it++ ) {
+		it->second->SetLineColor(kRed+cnt);
+		it->second->SetMarkerStyle(0);
+		it->second->Draw("hist same"); 
+		leg->AddEntry(it->second,it->first);
 		double integral, err;
-		integral = it->first->IntegralAndError(0,1000,err);
-		cout << it->second << " = " << integral << " +/- " << err << endl;
+		integral = it->second->IntegralAndError(0,1000,err);
+		cout << it->first << " = " << integral << " +/- " << err << endl;
 		cnt++;
 	    }
 	}
@@ -224,8 +222,9 @@ void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TH1D*,TString>
         	leg->AddEntry(hQCD,"QCD");
         	leg->AddEntry(histW,"WJets");
         	leg->AddEntry(histTT,"TTJets");
+        	leg->AddEntry(histST,"SingleTop");
 	}
-        if(hData) leg->AddEntry(hData,"2015D Data)");
+        if(hData) leg->AddEntry(hData,"2015D Data");
 	if(hBack) {
 		leg->AddEntry(hBackErr,"Stat.+x-sec unc.","F");
 	}	
@@ -253,8 +252,6 @@ void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TH1D*,TString>
 }
 
 
-
-
 TString Tprimemass(Int_t HIdx, Int_t TIdx)
 {
 	TString out;
@@ -262,11 +259,9 @@ TString Tprimemass(Int_t HIdx, Int_t TIdx)
 	return out;
 }
 
-TString dR(Int_t Idx1, Int_t Idx2) {
+double dR(double eta1,double phi1, double eta2, double phi2) {
 
-	TString out;
-	out.Form("deltaR(etaAK8[%d],phiAK8[%d],etaAK8[%d],phiAK8[%d])",Idx1,Idx1,Idx2,Idx2);
-	return out;
+	return deltaR(eta1,phi1,eta2,phi2);
 }
 
 
@@ -307,11 +302,23 @@ double makeStackEta(TString plot, TString cuts,TString label,TString title,  int
 	return srb;
 }
 */
-
-double makeStack(TString plot,TString cuts, TString Signal, TString label, TString yLabel, TString title,int sigScale = 1, int rebin = 1,int bins=1000, int xMin=0, int xMax=1000, TString sScale="1",bool bSep = false, bool bData = true)
+/*
+double maxEta()
 {
+	double max = 0;
+	for (int i = 0 ; i < idx->size(); i++ )
+	{
+	   if(eta->at(idx->at(i)) > max)
+		max = eta->at(idx->at(i));
+	}
+	return max;
+}
+*/
 
-	TString sPath = "/home/t3-ku/stringer/storeuser/TPrime/Trees/Selection0215/";
+double makeStack(TString plot,TString cuts, TString Signal, TString label, TString yLabel, TString title,int sigScale = 1, int rebin = 1,int bins=1000, int xMin=0, int xMax=1000, TString sScale="1",bool bSep = false, bool bData = true, TString sExt="")
+{
+	gROOT->Clear();
+	TString sPath = "/home/t3-ku/stringer/CMSSW_7_4_8_patch1/src/UserCode/TprimeAna/test/Selection0217/";
 
 	TH1::SetDefaultSumw2();
 
@@ -322,6 +329,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	TChain * tree9 = new TChain("ana/tree");
 	TChain * tree10 = new TChain("ana/tree");
 	TChain * tree11 = new TChain("ana/tree");
+	TChain * tree12 = new TChain("ana/tree");
 
 	TChain * treeData = new TChain("ana/tree");
 
@@ -337,12 +345,12 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 
                 TString s = ((TObjString *)(sigNames->At(i)))->String();
 		if (s != ""){
-			TFile f(sPath+s+".root");
+			TFile f(sPath+s+sExt+".root");
 			TH1D * temp = (TH1D*) f.Get("allEvents/hEventCount_wt");
 			nEvts.insert(make_pair(s,temp->Integral(0,10000)));
 			f.Close();
 			TChain * t = new TChain("ana/tree"); 			
-			t->Add(sPath+s+".root");
+			t->Add(sPath+s+sExt+".root");
 			s.ReplaceAll("*","");
 			TString ScaleNoHT(sScale);
 			ScaleNoHT = ScaleNoHT.ReplaceAll("EvtWtHTUp*","");
@@ -352,24 +360,29 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 
 			TH1D *histSig = new TH1D(s,"",bins,xMin,xMax);
 			t->Draw(plot+">>"+s,ScaleNoHT+"*("+cuts+")");
+			cout << "Plotting " << s <<endl;
 			fSig.insert(make_pair(t,s));
 		}
 	}
 	//Get number of events.
 	
-        TFile * fTT = new TFile (sPath+"TTJets.root","READ");
-        TFile * f700 = new TFile (sPath+"QCDHT700.root","READ");
-        TFile * f1000 = new TFile (sPath+"QCDHT1000.root","READ");
-        TFile * f1500 = new TFile (sPath+"QCDHT1500.root","READ");
-        TFile * f2000 = new TFile (sPath+"QCDHT2000.root","READ");
-        TFile * fW = new TFile (sPath+"WJets.root","READ");
+        TFile * fTT = new TFile (sPath+"TTJets_powheg"+sExt+".root","READ");
+        TFile * f700 = new TFile (sPath+"QCDHT700"+sExt+".root","READ");
+        TFile * f1000 = new TFile (sPath+"QCDHT1000"+sExt+".root","READ");
+        TFile * f1500 = new TFile (sPath+"QCDHT1500"+sExt+".root","READ");
+        TFile * f2000 = new TFile (sPath+"QCDHT2000"+sExt+".root","READ");
+        TFile * fW = new TFile (sPath+"WJets"+sExt+".root","READ");
+        TFile * fSTT = new TFile (sPath+"ST_top"+sExt+".root","READ");
+        TFile * fSTaT = new TFile (sPath+"ST_antitop"+sExt+".root","READ");
 
 	TH1D * tempTT = (TH1D*) fTT->Get("allEvents/hEventCount_wt");
 	TH1D * temp700 = (TH1D*) f700->Get("allEvents/hEventCount_wt");
 	TH1D * temp1000 = (TH1D*) f1000->Get("allEvents/hEventCount_wt");
 	TH1D * temp1500 = (TH1D*) f1500->Get("allEvents/hEventCount_wt");
 	TH1D * temp2000 = (TH1D*) f2000->Get("allEvents/hEventCount_wt");
-	TH1D * tempW = (TH1D*) fW->Get("allEvents/hEventCount_nowt");
+	TH1D * tempW = (TH1D*) fW->Get("allEvents/hEventCount_wt");
+	TH1D * tempSTT = (TH1D*) fSTT->Get("allEvents/hEventCount_wt");
+	TH1D * tempSTaT = (TH1D*) fSTaT->Get("allEvents/hEventCount_wt");
 
         nEvts.insert(make_pair("TTJets",tempTT->Integral(0,10000)));
         nEvts.insert(make_pair("QCDHT700",temp700->Integral(0,10000)));
@@ -377,6 +390,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
         nEvts.insert(make_pair("QCDHT1500",temp1500->Integral(0,10000)));
         nEvts.insert(make_pair("QCDHT2000",temp2000->Integral(0,10000)));
         nEvts.insert(make_pair("WJets",tempW->Integral(0,10000)));
+        nEvts.insert(make_pair("ST",tempSTT->Integral(0,10000)+tempSTaT->Integral(0,10000)));
 	
 
         fTT->Close();
@@ -385,29 +399,33 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
         f1500->Close();
         f2000->Close();
         fW->Close();
+	fSTT->Close();
+	fSTaT->Close();
 	
 	delete fTT;
 	delete f700;
 	delete f1000;
 	delete f1500;
 	delete f2000;
+	delete fSTT;
+	delete fSTaT;
 
 	cout << "TTJets: " << nEvts["TTJets"] <<endl;
 	cout << "700: " << nEvts["QCDHT700"] <<endl;
 	
 	// 
 
-        tree2->Add(sPath+"TTJets*.root");
+        tree2->Add(sPath+"TTJets_powheg"+sExt+".root");
         //TFile * f3 = new TFile ("QCDHT100v2.root","READ");
         //TFile * f4 = new TFile ("QCDHT200v2.root","READ");
         //TFile * f5 = new TFile ("QCDHT300v2.root","READ");
 	//cout << "QCD500: " << tree6->Add("QCDHT500v2*.root") << endl;
-        cout << "QCD700: " << tree7->Add(sPath+"QCDHT700.root") << endl ;
-        cout << "QCD1000: " << tree8->Add(sPath+"QCDHT1000.root") << endl;
-        cout << "QCD1500: " << tree9->Add(sPath+"QCDHT1500.root") << endl;
-        cout << "QCD2000: " << tree10->Add(sPath+"QCDHT2000.root") << endl;
-        cout << "WJets: " << tree11->Add(sPath+"WJets.root") << endl;
-
+        cout << "QCD700: " << tree7->Add(sPath+"QCDHT700"+sExt+".root") << endl ;
+        cout << "QCD1000: " << tree8->Add(sPath+"QCDHT1000"+sExt+".root") << endl;
+        cout << "QCD1500: " << tree9->Add(sPath+"QCDHT1500"+sExt+".root") << endl;
+        cout << "QCD2000: " << tree10->Add(sPath+"QCDHT2000"+sExt+".root") << endl;
+        cout << "WJets: " << tree11->Add(sPath+"WJets"+sExt+".root") << endl;
+	cout << "ST: " << tree12->Add(sPath+"ST*"+sExt+".root") << endl;
 
   	
         gStyle->SetOptStat(0);
@@ -423,6 +441,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	TH1D * hist9 = new TH1D("ht9","",bins,xMin,xMax);
         TH1D *hist10 = new TH1D("ht10","",bins,xMin,xMax);
 	TH1D *hist11 = new TH1D("ht11","",bins,xMin,xMax);
+	TH1D *hist12 = new TH1D("ht12","",bins,xMin,xMax);
 	TH1D *histData = new TH1D("htdata","",bins,xMin,xMax);;
 
 /*    
@@ -452,6 +471,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	hist9->Rebin(rebin);
 	hist10->Rebin(rebin);
 	hist11->Rebin(rebin);
+	hist12->Rebin(rebin);
 	histData->Rebin(rebin);
 
 	THStack * hs = new THStack("hs","SideBand");
@@ -511,15 +531,23 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	cout << "Back Scale: " << sScale << endl;
 //	tree1->Draw(plot+">>ht1",sScale+"*("+cuts+")");
 	tree2->Draw(plot+">>ht2",sScale+"*("+cuts+")");
+	cout << "Plotted TTJets" << endl;
 	//tree3->Draw(plot+">>ht3",sScale+"*("+cuts+")");
 	//tree4->Draw(plot+">>ht4",sScale+"*("+cuts+")");
 	//tree5->Draw(plot+">>ht5",sScale+"*("+cuts+")");
 	//tree6->Draw(plot+">>ht6",sScale+"*("+cuts+")");
 	tree7->Draw(plot+">>ht7",sScale+"*("+cuts+")");
+	cout << "Plotted QCD700" << endl;
 	tree8->Draw(plot+">>ht8",sScale+"*("+cuts+")");
+	cout << "Plotted QCD1000" << endl;
 	tree9->Draw(plot+">>ht9",sScale+"*("+cuts+")");
+	cout << "Plotted QCD1500" << endl;
 	tree10->Draw(plot+">>ht10",sScale+"*("+cuts+")");
+	cout << "Plotted QCD2000" << endl;
 	tree11->Draw(plot+">>ht11",sScale+"*("+cuts+")");
+	cout << "Plotted WJets" << endl;
+	tree12->Draw(plot+">>ht12",sScale+"*("+cuts+")");
+	cout << "Plotted ST" << endl;
 
 
 /*
@@ -537,6 +565,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 */
 	cout << "data cuts: " << cuts  << endl;	
 	treeData->Draw(plot+">>htdata",cuts);
+	cout << "Plotted Data" << endl;
 
 	//Dump Events to text file
 	//
@@ -546,15 +575,20 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 
 	double lumi = 2197  ; //1.929/2 ;//1.28/2;
 
-	std::map<TH1D*, TString> hSignal;
+	std::map<TString , TH1D*> hSignal;
 	int c = 0;
 	for( std::map<TChain * , TString>::iterator it = fSig.begin() ; it != fSig.end(); it++) {
-
-	    std::map<TH1D*,TString>::iterator hit = (hSignal.insert(make_pair((TH1D*) gROOT->FindObject(it->second),it->second+" x "+TString::Itoa(sigScale,10)))).first;
-	    hit->first->Scale(1*lumi/nEvts[it->second]*sigScale);			
-            hit->first->SetLineColor(kRed+c);
+	//    cout << "Find: " << it->second << "  " ;
+	    TH1D * htemp = (TH1D*) gROOT->FindObject(it->second);
+	//    cout << htemp << endl ;
+	    std::map<TString,TH1D*>::iterator hit = (hSignal.insert(make_pair(it->second+" x "+TString::Itoa(sigScale,10),htemp))).first;
+	//    cout << "hit->second: " <<hit->second << endl;
+	    hit->second->Scale(1*lumi/nEvts[it->second]*sigScale);			
+            hit->second->SetLineColor(kRed+c);
 	    c++;
 	}
+
+//	cout << "Filled hSignal" << endl;
 
 	//hist1 = (TH1D*) gROOT->FindObject("ht1");
 	hist2 = (TH1D*) gROOT->FindObject("ht2")->Clone("TTJets");
@@ -567,6 +601,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	hist9 = (TH1D*) gROOT->FindObject("ht9");
 	hist10 = (TH1D*) gROOT->FindObject("ht10");
 	hist11 = (TH1D*) gROOT->FindObject("ht11")->Clone("WJets");
+	hist12 = (TH1D*) gROOT->FindObject("ht12")->Clone("ST");
 	histData = (TH1D*) gROOT->FindObject("htdata")->Clone("Data");
 
 	cout << "TTJets SF: " << 831.76/nEvts["TTJets"]*lumi << endl;
@@ -581,6 +616,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
         hist9->Scale(119.9/nEvts["QCDHT1500"]*lumi);
         hist10->Scale(25.24/nEvts["QCDHT2000"]*lumi);
         hist11->Scale(95.14/nEvts["WJets"]*lumi);
+	hist12->Scale(35.6/nEvts["ST"]*lumi);
 
         hist2->SetFillColor(3);
         //hist3->SetFillColor(4);
@@ -592,6 +628,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	hist9->SetFillColor(10);
 	hist10->SetFillColor(11);
 	hist11->SetFillColor(12);
+	hist12->SetFillColor(13);
 
 	//hs->Add(hist1);
 	hs->Add(hist2,"hist");
@@ -604,6 +641,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	hs->Add(hist8,"hist");
 	hs->Add(hist9,"hist");
 	hs->Add(hist10,"hist");
+	hs->Add(hist12,"hist");
 
 	//hs->SetMaximum(700);
 
@@ -665,7 +703,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 */
 	double err = 0;
 	double integral = hist2->IntegralAndError(0,1000,err);
-	cout << "TT: " << integral << " +/- " << sqrt(pow(integral*csErr[0],2) + pow(err,2)) << endl;   
+	cout << "TT: " << integral << " +/- " << err << endl; //  << sqrt(pow(integral*csErr[0],2) + pow(err,2)) << endl;   
 
 //	integral = hist3->IntegralAndError(0,1000,err);
 //	cout << "QCD100: "  << integral << " +/- " << sqrt(pow(integral*csErr[1],2) + pow(err,2)) << endl;   
@@ -680,28 +718,33 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 //	cout << "QCD500: "  << integral << " +/- " << sqrt(pow(integral*csErr[4],2) + pow(err,2)) << endl;   
 
 	integral = hist7->IntegralAndError(0,1000,err);
-	cout << "QCD700: "  << integral << " +/- " << sqrt(pow(integral*csErr[5],2) + pow(err,2)) << endl;   
+	cout << "QCD700: "  << integral << " +/- " << err << endl;// << sqrt(pow(integral*csErr[5],2) + pow(err,2)) << endl;   
 
 	integral = hist8->IntegralAndError(0,1000,err);
-	cout << "QCD1000: "  << integral << " +/- " << sqrt(pow(integral*csErr[6],2) + pow(err,2)) << endl;   
+	cout << "QCD1000: "  << integral << " +/- "<< err << endl;// << sqrt(pow(integral*csErr[6],2) + pow(err,2)) << endl;   
 
 	integral = hist9->IntegralAndError(0,1000,err);
-	cout << "QCD1500: "  << integral << " +/- " << sqrt(pow(integral*csErr[7],2) + pow(err,2)) << endl;   
+	cout << "QCD1500: "  << integral << " +/- " << err << endl;//<< sqrt(pow(integral*csErr[7],2) + pow(err,2)) << endl;   
 
 	integral = hist10->IntegralAndError(0,1000,err);
-	cout << "QCD2000: " << integral << " +/- "  << sqrt(pow(integral*csErr[8],2) + pow(err,2)) << endl;   
+	cout << "QCD2000: " << integral << " +/- " << err << endl;// << sqrt(pow(integral*csErr[8],2) + pow(err,2)) << endl;   
   
 	integral = hist11->IntegralAndError(0,1000,err);
-	cout << "WJets: " << integral << " +/- "  << sqrt(pow(integral*csErr[9],2) + pow(err,2)) << endl;   
-  
-/*
-	cout << "Background Events: " << back << endl; 
-	cout << "Background Eff: " << back/(2317750.0*lumi) << endl;
+	cout << "WJets: " << integral << " +/- " << err << endl;// << sqrt(pow(integral*csErr[9],2) + pow(err,2)) << endl;   
 
-	double srb = hist1->Integral(0,8000)/sqrt(back);
+	integral = hist12->IntegralAndError(0,1000,err);
+	cout << "ST: " << integral << " +/- " << err << endl;// << sqrt(pow(integral*csErr[9],2) + pow(err,2)) << endl;   
+  
+
+	cout << "Background Events: " << fromStack->Integral(0,1000) << endl; 
+//	cout << "Background Eff: " << back/(2317750.0*lumi) << endl;
+	
+	TString s = ((TObjString *)(sigNames->At(0)))->String();
+
+	double srb = hSignal[s+" x "+TString::Itoa(sigScale,10)]->Integral(0,8000)/sqrt(fromStack->Integral(0,1000));
 
 	cout << "S/sqrt(B): " << srb << endl;
-*/
+
 
 	int data = histData->Integral(0,1000);
 	cout << "Data Events: " << data << endl;
@@ -725,22 +768,38 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	TH1D * histQCD = (TH1D * )((TH1D*)(hsQCD->GetStack()->Last()))->Clone("histQCD");
 
 	integral = histQCD->IntegralAndError(0,1000,err);
-        cout << "QCD_Total: " << integral << " +/- "  << sqrt(pow(integral*csErr[9],2) + pow(err,2)) << endl;
+        cout << "QCD_Total: " << integral << " +/- "<< err << endl;//  << sqrt(pow(integral*csErr[9],2) + pow(err,2)) << endl;
 
 
 //	double qcdSF= (histData->Integral(0,1000)-hist11->Integral(0,1000)-hist2->Integral(0,1000))/histQCD->Integral(0,1000);
 
 //	histQCD->Scale(qcdSF);
+//
+
+	TFile rFile(title+".root","RECREATE");
+	histData->Write();
+	histQCD->Write();
+	hist11->Write();
+	hist2->Write();
+	hist12->Write();
+	
+	for( std::map<TString,TH1D*>::iterator it = hSignal.begin() ; it != hSignal.end(); it++) {
+		cout << "Writing "<< it->first << endl;
+		it->second->Write();
+	}
+
+	rFile.Close();
+	
 
         TCanvas * c1 = new TCanvas("c1");
         c1->cd();
 
 	if(!bSep) {
 	   if(bData)
-	      	DrawPlot(c1,fromStack,  histData, hSignal, histQCD ,hist11, hist2 );
+	      	DrawPlot(c1,fromStack,  histData, hSignal, histQCD ,hist11, hist2, hist12 );
 	   else {
 		    TH1D* hd = 0;
-		    DrawPlot(c1,fromStack,  hd, hSignal ,histQCD ,hist11, hist2 );
+		    DrawPlot(c1,fromStack,  hd, hSignal ,histQCD ,hist11, hist2 ,hist12);
 		}
 	}
 	else {	
@@ -759,6 +818,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 //        leg->AddEntry(hist1,"Tprime");
         leg->AddEntry(hist2,"TTJets");
 	leg->AddEntry(hist11,"WJets");
+	leg->AddEntry(hist12,"SingleTop");
 //        leg->AddEntry(hist3,"QCD100");
 //        leg->AddEntry(hist4,"QCD200");
 //        leg->AddEntry(hist5,"QCD300");
@@ -1002,6 +1062,11 @@ void MCPlot(Int_t H_Sj, Int_t TTag)
 void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 , TString sOpt = "Nominal")//TString plot, TString cutA, TString cutB, TString cutC, TString cutD)
 {
 
+	TString sExt;
+
+	if(sOpt != "Nominal") 
+		sExt = sOpt;
+
         TString lumiText = "2.2 fb^{-1} (13 TeV)";
         TString cmsText = "#bf{CMS}";
         TString extraText = "Preliminary";
@@ -1015,12 +1080,13 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 , TStrin
         latex.SetTextAlign(31);
         latex.SetTextSize(.04);
 
-	TString sScale = "WtTrig(ht)*EvtWeight*EvtWtPV";
+	//TString sScale = "WtTrig(ht)*EvtWeight*EvtWtPV";
+	TString sScale = "EvtWeight*EvtWtPV";
 
-	sScale += "*EvtWtHT";
+	//sScale += "*EvtWtHT";
 	
-	if(HTscale == 1) sScale += "Up";
-	else if (HTscale == -1)  sScale += "Down";
+//	if(HTscale == 1) sScale += "Up";
+//	else if (HTscale == -1)  sScale += "Down";
 	
 	sScale += "*btagsf";	
 
@@ -1038,51 +1104,80 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 , TStrin
 	
 
 
-	makeStack("ht", "isRegionA" ,"Tprime1200_LH","HT GeV","Events","Cut A",1,1,20,1000,2600,sScale);
+	makeStack("ht", "isRegionA" ,"Tprime1200_LH","HT GeV","Events","Cut A",1,1,40,1000,2600,sScale,false,false,sExt);
 
 
         TH1D * histA = (TH1D*) gROOT->FindObject("htdata")->Clone();
         TH1D * histAQCD = (TH1D*) gROOT->FindObject("histQCD")->Clone();
-	TH1D * histATT = (TH1D*) gROOT->FindObject("ht2")->Clone();
-	TH1D * histAW = (TH1D*) gROOT->FindObject("ht11")->Clone();
+	TH1D * histATT = (TH1D*) gROOT->FindObject("TTJets")->Clone();
+	TH1D * histAW = (TH1D*) gROOT->FindObject("WJets")->Clone();
+
+	delete gROOT->FindObject("TTJets");
+
+        cout << "TT A: " << histATT->Integral(0,1000) << endl;
+
 
         TCanvas * c1 = (TCanvas * ) gROOT->FindObject("c1");
         c1->Print("CutAdata.pdf");
 	if(bMt) 
-		makeStack("mtprimeDummy", "isRegionB","Tprime1200_LH","HT GeV","Events","Cut B",1,1,36,600,2400,sScale+tScale);
+		makeStack("mtprimeDummy", "isRegionB","Tprime1200_LH","HT GeV","Events","Cut B",1,1,36,600,2400,sScale+tScale,false,false,sExt);
 	else
-        	makeStack("ht","isRegionB","Tprime1200_LH","HT GeV","Events","Cut B",1,1,20,1000,2600,sScale+tScale);
+        	makeStack("ht","isRegionB","Tprime1200_LH","HT GeV","Events","Cut B",1,1,40,1000,2600,sScale+tScale,false,false,sExt);
 
 
         TH1D * histB = (TH1D*) gROOT->FindObject("htdata")->Clone();
         TH1D * histBQCD = (TH1D*) gROOT->FindObject("histQCD")->Clone();
-	TH1D * histBTT = (TH1D*) gROOT->FindObject("ht2")->Clone();
-	TH1D * histBW = (TH1D*) gROOT->FindObject("ht11")->Clone();
+	TH1D * histBTT = (TH1D*) gROOT->FindObject("TTJets")->Clone();
+	TH1D * histBW = (TH1D*) gROOT->FindObject("WJets")->Clone();
+
+        cout << "TT A: " << histATT->Integral(0,1000) << endl;
+
 
         c1 = (TCanvas * ) gROOT->FindObject("c1");
         c1->Print("CutBdata.pdf");
 
 	
 
-        makeStack("ht", "isRegionC","Tprime1200_LH","HT GeV","Events","Cut C",1,1,20,1000,2600,sScale);
+        makeStack("ht", "isRegionC","Tprime1200_LH","HT GeV","Events","Cut C",1,1,40,1000,2600,sScale,false,false,sExt);
         TH1D * histC = (TH1D*) gROOT->FindObject("htdata")->Clone();
         TH1D * histCQCD = (TH1D*) gROOT->FindObject("histQCD")->Clone();
-	TH1D * histCTT = (TH1D*) gROOT->FindObject("ht2")->Clone();
-	TH1D * histCW = (TH1D*) gROOT->FindObject("ht11")->Clone();
+	TH1D * histCTT = (TH1D*) gROOT->FindObject("TTJets")->Clone();
+	TH1D * histCW = (TH1D*) gROOT->FindObject("WJets")->Clone();
+
+        cout << "TT A: " << histATT->Integral(0,1000) << endl;
 
         c1 = (TCanvas * ) gROOT->FindObject("c1");
         c1->Print("CutCdata.pdf");
 
-        if (bMt) makeStack("mtprime", "isRegionD","Tprime1200_LH","HT GeV","Events","Cut D",1,1,36,600,2400,sScale+tScale);
+        if (bMt) makeStack("mtprime", "isRegionD","Tprime1200_LH","HT GeV","Events","Cut D",1,1,36,600,2400,sScale+tScale,false,false,sExt);
 	else
-        	makeStack("ht", "isRegionD","Tprime1200_LH","HT GeV","Events","Cut D",1,1,20,1000,2600,sScale+tScale);
+        	makeStack("ht", "isRegionD","Tprime1200_LH","HT GeV","Events","Cut D",1,1,40,1000,2600,sScale+tScale,sExt);
+
+        cout << "TT A: " << histATT->Integral(0,1000) << endl;
+
 
 	TH1D * hdata = (TH1D*) gROOT->FindObject("htdata");
         TH1D * histD = (TH1D*) gROOT->FindObject("htdata")->Clone();
         TH1D * histDQCD = (TH1D*) gROOT->FindObject("histQCD")->Clone();
-	TH1D * histDTT = (TH1D*) gROOT->FindObject("ht2")->Clone();
-	TH1D * histDW = (TH1D*) gROOT->FindObject("ht11")->Clone();
+	TH1D * histDTT = (TH1D*) gROOT->FindObject("TTJets")->Clone();
+	TH1D * histDW = (TH1D*) gROOT->FindObject("WJets")->Clone();
 	TH1D * histDBack= (TH1D*) gROOT->FindObject("hBack")->Clone();
+
+	cout << "TT A: " << histATT->Integral(0,1000) << endl;
+        cout << "TT B: " << histBTT->Integral(0,1000) << endl;
+        cout << "TT C: " << histCTT->Integral(0,1000) << endl;
+        cout << "TT D: " << histDTT->Integral(0,1000) << endl;
+
+        cout << "W A: " << histAW->Integral(0,1000) << endl;
+        cout << "W B: " << histBW->Integral(0,1000) << endl;
+        cout << "W C: " << histCW->Integral(0,1000) << endl;
+        cout << "W D: " << histDW->Integral(0,1000) << endl;
+
+	cout << "Data A: " << histA->Integral(0,1000) << endl;
+        cout << "Data B: " << histB->Integral(0,1000) << endl;
+        cout << "Data C: " << histC->Integral(0,1000) << endl;
+        cout << "Data D: " << histD->Integral(0,1000) << endl;
+
 
 	//Data
 
@@ -1100,21 +1195,16 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 , TStrin
 
 	//MC
 
-	cout << "MC A: " << histAQCD->Integral(0,1000) << endl;
-	cout << "MC B: " << histBQCD->Integral(0,1000) << endl;
-	cout << "MC C: " << histCQCD->Integral(0,1000) << endl;
-	cout << "MC D: " << histDQCD->Integral(0,1000) << endl;
+        cout << "Data A: " << histA->Integral(0,1000) << endl;
+        cout << "Data B: " << histB->Integral(0,1000) << endl;
+        cout << "Data C: " << histC->Integral(0,1000) << endl;
+        cout << "Data D: " << histD->Integral(0,1000) << endl;
+
 
         c1 = new TCanvas("c2");
 
         c1->cd();
-/*
-        TPad *pad1 = new TPad("pad3","pad1",0,0.3,1,1);
-        pad1->SetBottomMargin(0.08);
-        pad1->SetTopMargin(0.05);
-        pad1->Draw();
-        pad1->cd();
-*/
+
         //D=C*B/A -> A/B = C/D 
         double SF = histA->Integral(0,1000)/histB->Integral(0,1000)/histC->Integral(0,1000) * histD->Integral(0,1000);
         cout << "A: " << histA->Integral(0,1000) << endl;
