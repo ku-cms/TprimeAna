@@ -116,10 +116,13 @@ hist112 = (TH1D*) file11->Get("TT-MC")->Clone("HT_TT");
 fix(hist112);
 hist113 = (TH1D*) file11->Get("W-MC")->Clone("HT_W");
 fix(hist113);
+hist115 = (TH1D*) file11->Get("ST-MC")->Clone("HT_ST");
+fix(hist115);
 
 hist114 = (TH1D*) hist111->Clone("HT_background");
 hist114->Add(hist112);
 hist114->Add(hist113); 
+hist114->Add(hist115);
 
 hist121 = (TH1D*) file12->Get("QCD-Est")->Clone("HT_QCD_HTUp");
 fix(hist121);
@@ -127,10 +130,13 @@ hist122 = (TH1D*) file12->Get("TT-MC")->Clone("HT_TT_HTUp");
 fix(hist122);
 hist123 = (TH1D*) file12->Get("W-MC")->Clone("HT_W_HTUp");
 fix(hist123);
+hist125 = (TH1D*) file12->Get("ST-MC")->Clone("HT_ST_HTUp");
+fix(hist125);
 
 hist124 = (TH1D*) hist121->Clone("HT_background_HTUp");
 hist124->Add(hist122);
 hist124->Add(hist123);
+hist124->Add(hist125);
 
 hist131 = (TH1D*) file13->Get("QCD-Est")->Clone("HT_QCD_HTDown");
 fix(hist131);
@@ -138,10 +144,13 @@ hist132 = (TH1D*) file13->Get("TT-MC")->Clone("HT_TT_HTDown");
 fix(hist132);
 hist133 = (TH1D*) file13->Get("W-MC")->Clone("HT_W_HTDown");
 fix(hist133);
+hist135 = (TH1D*) file13->Get("ST-MC")->Clone("HT_ST_HTDown");
+fix(hist135);
 
 hist134 = (TH1D*) hist131->Clone("HT_background_HTDown");
 hist134->Add(hist132);
 hist134->Add(hist133);
+hist134->Add(hist135);
 
 hist161 = (TH1D*) file16->Get("QCD-Est")->Clone("HT_QCD_bcUp");
 fix(hist161);
@@ -149,10 +158,13 @@ hist162 = (TH1D*) file16->Get("TT-MC")->Clone("HT_TT_bcUp");
 fix(hist162);
 hist163 = (TH1D*) file16->Get("W-MC")->Clone("HT_W_bcUp");
 fix(hist163);
+hist165 = (TH1D*) file16->Get("ST-MC")->Clone("HT_ST_bcUp");
+fix(hist165);
 
 hist164 = (TH1D*) hist161->Clone("HT_background_bcUp");
 hist164->Add(hist162);
 hist164->Add(hist163);
+hist164->Add(hist165);
 
 hist171 = (TH1D*) file17->Get("QCD-Est")->Clone("HT_QCD_bcDown");
 fix(hist171);
@@ -160,10 +172,13 @@ hist172 = (TH1D*) file17->Get("TT-MC")->Clone("HT_TT_bcDown");
 fix(hist172);
 hist173 = (TH1D*) file17->Get("W-MC")->Clone("HT_W_bcDown");
 fix(hist173);
+hist175 = (TH1D*) file17->Get("ST-MC")->Clone("HT_ST_bcDown");
+fix(hist175);
 
 hist174 = (TH1D*) hist171->Clone("HT_background_bcDown");
 hist174->Add(hist172);
 hist174->Add(hist173);
+hist174->Add(hist175);
 
 hist141 = (TH1D*) file14->Get("QCD-Est")->Clone("HT_QCD_lUp");
 fix(hist141);
@@ -171,10 +186,13 @@ hist142 = (TH1D*) file14->Get("TT-MC")->Clone("HT_TT_lUp");
 fix(hist142);
 hist143 = (TH1D*) file14->Get("W-MC")->Clone("HT_W_lUp");
 fix(hist143);
+hist145 = (TH1D*) file14->Get("ST-MC")->Clone("HT_ST_lUp");
+fix(hist145);
 
 hist144 = (TH1D*) hist141->Clone("HT_background_lUp");
 hist144->Add(hist142);
 hist144->Add(hist143);
+hist144->Add(hist145);
 
 hist151 = (TH1D*) file15->Get("QCD-Est")->Clone("HT_QCD_lDown");
 fix(hist151);
@@ -182,10 +200,13 @@ hist152 = (TH1D*) file15->Get("TT-MC")->Clone("HT_TT_lDown");
 fix(hist152);
 hist153 = (TH1D*) file15->Get("W-MC")->Clone("HT_W_lDown");
 fix(hist153);
+hist155 = (TH1D*) file15->Get("ST-MC")->Clone("HT_ST_lDown");
+fix(hist155);
 
 hist154 = (TH1D*) hist151->Clone("HT_background_lDown");
 hist154->Add(hist152);
 hist154->Add(hist153);
+hist154->Add(hist155);
 
 
 hist181 = (TH1D*) file18->Get("QCD-Est")->Clone("HT_QCD_ttagUp");
@@ -194,10 +215,13 @@ hist182 = (TH1D*) file18->Get("TT-MC")->Clone("HT_TT_ttagUp");
 fix(hist182);
 hist183 = (TH1D*) file18->Get("W-MC")->Clone("HT_W_ttagUp");
 fix(hist183);
+hist185 = (TH1D*) file18->Get("ST-MC")->Clone("HT_ST_ttagUp");
+fix(hist1835);
 
 hist184 = (TH1D*) hist181->Clone("HT_background_ttagUp");
 hist184->Add(hist182);
 hist184->Add(hist183);
+hist184->Add(hist185);
 
 hist191 = (TH1D*) file19->Get("QCD-Est")->Clone("HT_QCD_ttagDown");
 fix(hist191);
@@ -205,10 +229,13 @@ hist192 = (TH1D*) file19->Get("TT-MC")->Clone("HT_TT_ttagDown");
 fix(hist192);
 hist193 = (TH1D*) file19->Get("W-MC")->Clone("HT_W_ttagDown");
 fix(hist193);
+hist195 = (TH1D*) file19->Get("ST-MC")->Clone("HT_ST_ttagDown");
+fix(hist195);
 
 hist194 = (TH1D*) hist191->Clone("HT_background_ttagDown");
 hist194->Add(hist192);
 hist194->Add(hist193);
+hist194->Add(hist195);
 
 hist101 = (TH1D*) file10->Get("QCD-Est")->Clone("HT_QCD_JERUp");
 fix(hist101);
@@ -216,10 +243,13 @@ hist102 = (TH1D*) file10->Get("TT-MC")->Clone("HT_TT_JERUp");
 fix(hist102);
 hist103 = (TH1D*) file10->Get("W-MC")->Clone("HT_W_JERUp");
 fix(hist103);
+hist105 = (TH1D*) file10->Get("ST-MC")->Clone("HT_ST_JERUp");
+fix(hist105);
 
 hist104 = (TH1D*) hist101->Clone("HT_background_JERUp");
 hist104->Add(hist102);
 hist104->Add(hist103);
+hist104->Add(hist105);
 
 
 hist1a1 = (TH1D*) file1a->Get("QCD-Est")->Clone("HT_QCD_JERDown");
@@ -228,10 +258,13 @@ hist1a2 = (TH1D*) file1a->Get("TT-MC")->Clone("HT_TT_JERDown");
 fix(hist1a2);
 hist1a3 = (TH1D*) file1a->Get("W-MC")->Clone("HT_W_JERDown");
 fix(hist1a3);
+hist1a5 = (TH1D*) file1a->Get("ST-MC")->Clone("HT_ST_JERDown");
+fix(hist1a5);
 
 hist1a4 = (TH1D*) hist1a1->Clone("HT_background_JERDown");
 hist1a4->Add(hist1a2);
 hist1a4->Add(hist1a3);
+hist1a4->Add(hist1a5);
 
 
 hist1b1 = (TH1D*) file1b->Get("QCD-Est")->Clone("HT_QCD_JESUp");
@@ -240,10 +273,13 @@ hist1b2 = (TH1D*) file1b->Get("TT-MC")->Clone("HT_TT_JESUp");
 fix(hist1b2);
 hist1b3 = (TH1D*) file1b->Get("W-MC")->Clone("HT_W_JESUp");
 fix(hist1b3);
+hist1b5 = (TH1D*) file1b->Get("ST-MC")->Clone("HT_ST_JESUp");
+fix(hist1b5);
 
 hist1b4 = (TH1D*) hist1b1->Clone("HT_background_JESUp");
 hist1b4->Add(hist1b2);
 hist1b4->Add(hist1b3);
+hist1b4->Add(hist1b5);
 
 
 hist1c1 = (TH1D*) file1c->Get("QCD-Est")->Clone("HT_QCD_JESDown");
@@ -252,10 +288,13 @@ hist1c2 = (TH1D*) file1c->Get("TT-MC")->Clone("HT_TT_JESDown");
 fix(hist1c2);
 hist1c3 = (TH1D*) file1c->Get("W-MC")->Clone("HT_W_JESDown");
 fix(hist1c3);
+hist1c5 = (TH1D*) file1c->Get("ST-MC")->Clone("HT_ST_JESDown");
+fix(hist1c5);
 
 hist1c4 = (TH1D*) hist1c1->Clone("HT_background_JESDown");
 hist1c4->Add(hist1c2);
 hist1c4->Add(hist1c3);
+hist1c4->Add(hist1c5);
 
 
 // Make stat err template
@@ -263,10 +302,12 @@ hist1c4->Add(hist1c3);
 hist1d1 = (TH1D*) hist111->Clone("HT_QCD_StatUp");
 hist1d2 = (TH1D*) hist112->Clone("HT_TT_StatUp");
 hist1d3 = (TH1D*) hist113->Clone("HT_W_StatUp");
+hist1d5 = (TH1D*) hist115->Clone("HT_ST_StatUp");
 hist1d4 = (TH1D*) hist114->Clone("HT_background_StatUp");
 hist1e1 = (TH1D*) hist111->Clone("HT_QCD_StatDown");
 hist1e2 = (TH1D*) hist112->Clone("HT_TT_StatDown");
 hist1e3 = (TH1D*) hist113->Clone("HT_W_StatDown");
+hist1e5 = (TH1D*) hist115->Clone("HT_ST_StatDown");
 hist1e4 = (TH1D*) hist114->Clone("HT_background_StatDown");
 
 TH1D * statErrUpHT[20];
@@ -281,10 +322,12 @@ for(int i = 1 ; i <= 20 ; i++) {
         hist1d1->SetBinContent(i,hist1d1->GetBinContent(i)+hist1d1->GetBinError(i));
         hist1d2->SetBinContent(i,hist1d2->GetBinContent(i)+hist1d2->GetBinError(i));
         hist1d3->SetBinContent(i,hist1d3->GetBinContent(i)+hist1d3->GetBinError(i));
+        hist1d5->SetBinContent(i,hist1d5->GetBinContent(i)+hist1d5->GetBinError(i));
         hist1d4->SetBinContent(i,hist1d4->GetBinContent(i)+hist1d4->GetBinError(i));
         hist1e1->SetBinContent(i,hist1e1->GetBinContent(i)-hist1e1->GetBinError(i));
         hist1e2->SetBinContent(i,hist1e2->GetBinContent(i)-hist1e2->GetBinError(i));
         hist1e3->SetBinContent(i,hist1e3->GetBinContent(i)-hist1e3->GetBinError(i));
+        hist1e5->SetBinContent(i,hist1e5->GetBinContent(i)-hist1e5->GetBinError(i));
         hist1e4->SetBinContent(i,hist1e4->GetBinContent(i)-hist1e4->GetBinError(i));
 }
 
@@ -299,10 +342,13 @@ hist12 = (TH1D*) file1->Get("TT-MC")->Clone("MTP_TT");
 fix(hist12);
 hist13 = (TH1D*) file1->Get("W-MC")->Clone("MTP_W");
 fix(hist13);
+hist15 = (TH1D*) file1->Get("ST-MC")->Clone("MTP_ST");
+fix(hist15);
 
 hist14 = (TH1D*) hist11->Clone("MTP_background");
 hist14->Add(hist12);
 hist14->Add(hist13); 
+hist14->Add(hist15); 
 
 hist21 = (TH1D*) file2->Get("QCD-Est")->Clone("MTP_QCD_HTUp");
 fix(hist21);
@@ -310,10 +356,13 @@ hist22 = (TH1D*) file2->Get("TT-MC")->Clone("MTP_TT_HTUp");
 fix(hist22);
 hist23 = (TH1D*) file2->Get("W-MC")->Clone("MTP_W_HTUp");
 fix(hist23);
+hist25 = (TH1D*) file2->Get("ST-MC")->Clone("MTP_ST_HTUp");
+fix(hist25);
 
 hist24 = (TH1D*) hist21->Clone("MTP_background_HTUp");
 hist24->Add(hist22);
 hist24->Add(hist23);
+hist24->Add(hist25);
 
 hist31 = (TH1D*) file3->Get("QCD-Est")->Clone("MTP_QCD_HTDown");
 fix(hist31);
@@ -321,10 +370,13 @@ hist32 = (TH1D*) file3->Get("TT-MC")->Clone("MTP_TT_HTDown");
 fix(hist32);
 hist33 = (TH1D*) file3->Get("W-MC")->Clone("MTP_W_HTDown");
 fix(hist33);
+hist35 = (TH1D*) file3->Get("ST-MC")->Clone("MTP_ST_HTDown");
+fix(hist35);
 
 hist34 = (TH1D*) hist31->Clone("MTP_background_HTDown");
 hist34->Add(hist32);
 hist34->Add(hist33);
+hist34->Add(hist35);
 
 hist61 = (TH1D*) file6->Get("QCD-Est")->Clone("MTP_QCD_bcUp");
 fix(hist61);
@@ -332,10 +384,13 @@ hist62 = (TH1D*) file6->Get("TT-MC")->Clone("MTP_TT_bcUp");
 fix(hist62);
 hist63 = (TH1D*) file6->Get("W-MC")->Clone("MTP_W_bcUp");
 fix(hist63);
+hist65 = (TH1D*) file6->Get("ST-MC")->Clone("MTP_ST_bcUp");
+fix(hist65);
 
 hist64 = (TH1D*) hist61->Clone("MTP_background_bcUp");
 hist64->Add(hist62);
 hist64->Add(hist63);
+hist64->Add(hist65);
 
 hist71 = (TH1D*) file7->Get("QCD-Est")->Clone("MTP_QCD_bcDown");
 fix(hist71);
@@ -343,10 +398,13 @@ hist72 = (TH1D*) file7->Get("TT-MC")->Clone("MTP_TT_bcDown");
 fix(hist72);
 hist73 = (TH1D*) file7->Get("W-MC")->Clone("MTP_W_bcDown");
 fix(hist73);
+hist75 = (TH1D*) file7->Get("ST-MC")->Clone("MTP_ST_bcDown");
+fix(hist75);
 
 hist74 = (TH1D*) hist71->Clone("MTP_background_bcDown");
 hist74->Add(hist72);
 hist74->Add(hist73);
+hist74->Add(hist75);
 
 hist41 = (TH1D*) file4->Get("QCD-Est")->Clone("MTP_QCD_lUp");
 fix(hist41);
@@ -354,10 +412,13 @@ hist42 = (TH1D*) file4->Get("TT-MC")->Clone("MTP_TT_lUp");
 fix(hist42);
 hist43 = (TH1D*) file4->Get("W-MC")->Clone("MTP_W_lUp");
 fix(hist43);
+hist45 = (TH1D*) file4->Get("ST-MC")->Clone("MTP_ST_lUp");
+fix(hist45);
 
 hist44 = (TH1D*) hist41->Clone("MTP_background_lUp");
 hist44->Add(hist42);
 hist44->Add(hist43);
+hist44->Add(hist45);
 
 hist51 = (TH1D*) file5->Get("QCD-Est")->Clone("MTP_QCD_lDown");
 fix(hist51);
@@ -365,10 +426,13 @@ hist52 = (TH1D*) file5->Get("TT-MC")->Clone("MTP_TT_lDown");
 fix(hist52);
 hist53 = (TH1D*) file5->Get("W-MC")->Clone("MTP_W_lDown");
 fix(hist53);
+hist55 = (TH1D*) file5->Get("ST-MC")->Clone("MTP_ST_lDown");
+fix(hist55);
 
 hist54 = (TH1D*) hist51->Clone("MTP_background_lDown");
 hist54->Add(hist52);
 hist54->Add(hist53);
+hist54->Add(hist55);
 
 hist81 = (TH1D*) file8->Get("QCD-Est")->Clone("MTP_QCD_ttagUp");
 fix(hist81);
@@ -376,10 +440,13 @@ hist82 = (TH1D*) file8->Get("TT-MC")->Clone("MTP_TT_ttagUp");
 fix(hist82);
 hist83 = (TH1D*) file8->Get("W-MC")->Clone("MTP_W_ttagUp");
 fix(hist83);
+hist85 = (TH1D*) file8->Get("ST-MC")->Clone("MTP_ST_ttagUp");
+fix(hist85);
 
 hist84 = (TH1D*) hist81->Clone("MTP_background_ttagUp");
 hist84->Add(hist82);
 hist84->Add(hist83);
+hist84->Add(hist85);
 
 hist91 = (TH1D*) file9->Get("QCD-Est")->Clone("MTP_QCD_ttagDown");
 fix(hist91);
@@ -387,10 +454,13 @@ hist92 = (TH1D*) file9->Get("TT-MC")->Clone("MTP_TT_ttagDown");
 fix(hist92);
 hist93 = (TH1D*) file9->Get("W-MC")->Clone("MTP_W_ttagDown");
 fix(hist93);
+hist95 = (TH1D*) file9->Get("ST-MC")->Clone("MTP_ST_ttagDown");
+fix(hist95);
 
 hist94 = (TH1D*) hist91->Clone("MTP_background_ttagDown");
 hist94->Add(hist92);
 hist94->Add(hist93);
+hist94->Add(hist95);
 cout << "Back2" <<endl;
 
 // Make stat err template
@@ -398,10 +468,12 @@ cout << "Back2" <<endl;
 histd1 = (TH1D*) hist11->Clone("MTP_QCD_StatUp");
 histd2 = (TH1D*) hist12->Clone("MTP_TT_StatUp");
 histd3 = (TH1D*) hist13->Clone("MTP_W_StatUp");
+histd5 = (TH1D*) hist15->Clone("MTP_ST_StatUp");
 histd4 = (TH1D*) hist14->Clone("MTP_background_StatUp");
 histe1 = (TH1D*) hist11->Clone("MTP_QCD_StatDown");
 histe2 = (TH1D*) hist12->Clone("MTP_TT_StatDown");
 histe3 = (TH1D*) hist13->Clone("MTP_W_StatDown");
+histe5 = (TH1D*) hist15->Clone("MTP_ST_StatDown");
 histe4 = (TH1D*) hist14->Clone("MTP_background_StatDown");
 
 TH1D * statErrUpMT[36];
@@ -416,9 +488,11 @@ for(int i = 1 ; i <= 36 ; i++) {
         histd1->SetBinContent(i,histd1->GetBinContent(i)+histd1->GetBinError(i));
         histd2->SetBinContent(i,histd2->GetBinContent(i)+histd2->GetBinError(i));
         histd3->SetBinContent(i,histd3->GetBinContent(i)+histd3->GetBinError(i));
+        histd5->SetBinContent(i,histd5->GetBinContent(i)+histd5->GetBinError(i));
         histe1->SetBinContent(i,histe1->GetBinContent(i)-histe1->GetBinError(i));
         histe2->SetBinContent(i,histe2->GetBinContent(i)-histe2->GetBinError(i));
         histe3->SetBinContent(i,histe3->GetBinContent(i)-histe3->GetBinError(i));
+        histe5->SetBinContent(i,histe5->GetBinContent(i)-histe5->GetBinError(i));
 }
 
 
@@ -428,10 +502,13 @@ hist02 = (TH1D*) file0->Get("TT-MC")->Clone("MTP_TT_JERUp");
 fix(hist02);
 hist03 = (TH1D*) file0->Get("W-MC")->Clone("MTP_W_JERUp");
 fix(hist03);
+hist05 = (TH1D*) file0->Get("ST-MC")->Clone("MTP_ST_JERUp");
+fix(hist05);
 
 hist04 = (TH1D*) hist01->Clone("MTP_background_JERUp");
 hist04->Add(hist02);
 hist04->Add(hist03);
+hist04->Add(hist05);
 
 
 hista1 = (TH1D*) filea->Get("QCD-Est")->Clone("MTP_QCD_JERDown");
@@ -440,10 +517,13 @@ hista2 = (TH1D*) filea->Get("TT-MC")->Clone("MTP_TT_JERDown");
 fix(hista2);
 hista3 = (TH1D*) filea->Get("W-MC")->Clone("MTP_W_JERDown");
 fix(hista3);
+hista5 = (TH1D*) filea->Get("ST-MC")->Clone("MTP_ST_JERDown");
+fix(hista5);
 
 hista4 = (TH1D*) hista1->Clone("MTP_background_JERDown");
 hista4->Add(hista2);
 hista4->Add(hista3);
+hista4->Add(hista5);
 
 
 histb1 = (TH1D*) fileb->Get("QCD-Est")->Clone("MTP_QCD_JESUp");
@@ -452,10 +532,13 @@ histb2 = (TH1D*) fileb->Get("TT-MC")->Clone("MTP_TT_JESUp");
 fix(histb2);
 histb3 = (TH1D*) fileb->Get("W-MC")->Clone("MTP_W_JESUp");
 fix(histb3);
+histb5 = (TH1D*) fileb->Get("ST-MC")->Clone("MTP_ST_JESUp");
+fix(histb5);
 
 histb4 = (TH1D*) histb1->Clone("MTP_background_JESUp");
 histb4->Add(histb2);
 histb4->Add(histb3);
+histb4->Add(histb5);
 
 histc1 = (TH1D*) filec->Get("QCD-Est")->Clone("MTP_QCD_JESDown");
 fix(histc1);
@@ -463,10 +546,13 @@ histc2 = (TH1D*) filec->Get("TT-MC")->Clone("MTP_TT_JESDown");
 fix(hist02);
 histc3 = (TH1D*) filec->Get("W-MC")->Clone("MTP_W_JESDown");
 fix(histc3);
+histc5 = (TH1D*) filec->Get("ST-MC")->Clone("MTP_ST_JESDown");
+fix(histc5);
 
 histc4 = (TH1D*) histc1->Clone("MTP_background_JESDown");
 histc4->Add(histc2);
 histc4->Add(histc3);
+histc4->Add(histc5);
 
 
 cout << "start sig" << endl;
@@ -1033,122 +1119,152 @@ for(int i = 0 ; i < 20 ; i++) {
 hist11->Write();
 hist12->Write();
 hist13->Write();
+hist15->Write();
 hist14->Write();
 hist21->Write();
 hist22->Write();
 hist23->Write();
+hist25->Write();
 hist24->Write();
 hist31->Write();
 hist32->Write();
 hist33->Write();
+hist35->Write();
 hist34->Write();
 hist41->Write();
 hist42->Write();
 hist43->Write();
+hist45->Write();
 hist44->Write();
 hist51->Write();
 hist52->Write();
 hist53->Write();
+hist55->Write();
 hist54->Write();
 hist61->Write();
 hist62->Write();
 hist63->Write();
+hist65->Write();
 hist64->Write();
 hist71->Write();
 hist72->Write();
 hist73->Write();
+hist75->Write();
 hist74->Write();
 hist81->Write();
 hist82->Write();
 hist83->Write();
+hist85->Write();
 hist84->Write();
 hist91->Write();
 hist92->Write();
 hist93->Write();
+hist95->Write();
 hist94->Write();
 hist01->Write();
 hist02->Write();
 hist03->Write();
+hist05->Write();
 hist04->Write();
 hista1->Write();
 hista2->Write();
 hista3->Write();
+hista5->Write();
 hista4->Write();
 histb1->Write();
 histb2->Write();
 histb3->Write();
+histb5->Write();
 histb4->Write();
 histc1->Write();
 histc2->Write();
 histc3->Write();
+histc5->Write();
 histc4->Write();
 histd1->Write();
 histd2->Write();
 histd3->Write();
+histd5->Write();
 histd4->Write();
 histe1->Write();
 histe2->Write();
 histe3->Write();
+histe5->Write();
 histe4->Write();
 hist111->Write();
 hist112->Write();
 hist113->Write();
+hist115->Write();
 hist114->Write();
 hist121->Write();
 hist122->Write();
 hist123->Write();
+hist125->Write();
 hist124->Write();
 hist131->Write();
 hist132->Write();
 hist133->Write();
+hist135->Write();
 hist134->Write();
 hist141->Write();
 hist142->Write();
 hist143->Write();
+hist145->Write();
 hist144->Write();
 hist151->Write();
 hist152->Write();
 hist153->Write();
+hist155->Write();
 hist154->Write();
 hist161->Write();
 hist162->Write();
 hist163->Write();
+hist165->Write();
 hist164->Write();
 hist171->Write();
 hist172->Write();
 hist173->Write();
+hist175->Write();
 hist174->Write();
 hist181->Write();
 hist182->Write();
 hist183->Write();
+hist185->Write();
 hist184->Write();
 hist191->Write();
 hist192->Write();
 hist193->Write();
+hist195->Write();
 hist194->Write();
 hist101->Write();
 hist102->Write();
 hist103->Write();
+hist105->Write();
 hist104->Write();
 hist1a1->Write();
 hist1a2->Write();
 hist1a3->Write();
+hist1a5->Write();
 hist1a4->Write();
 hist1b1->Write();
 hist1b2->Write();
 hist1b3->Write();
+hist1b5->Write();
 hist1b4->Write();
 hist1c1->Write();
 hist1c2->Write();
 hist1c3->Write();
+hist1c5->Write();
 hist1c4->Write();
 hist1d1->Write();
 hist1d2->Write();
 hist1d3->Write();
+hist1d5->Write();
 hist1d4->Write();
 hist1e1->Write();
 hist1e2->Write();
 hist1e3->Write();
+hist1e5->Write();
 hist1e4->Write();
 hist211->Write();
 hist212->Write();
