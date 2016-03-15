@@ -97,10 +97,10 @@ double WeightHT(double HT)
 //Par0: 0.25+/-0.02
 //Par1: -0.00025+/-0.000012
 
-	if(HT < 1000 || HT > 2400)
+	if(HT < 1100 || HT > 2600)
 		return 1;
 	else
-		return (1+(-0.00025*HT + 0.25));
+		return (1+(-0.0001961*HT + 0.262));
 	
 }
 
@@ -297,41 +297,11 @@ double mass(double pt1, double eta1, double phi1 ,double m1, double pt2, double 
 }
 
 
-double makeStack(TString plot, TString cuts, TString Signal, TString label,TString yLabel  ,TString title, int sigScale ,int rebin , int bins, int xMin, int xMax, TString sScale, bool bSep, bool bData);
-
-/*
-double makeStackEta(TString plot, TString cuts,TString label,TString title,  int rebin =1, int yMax = 2000, bool sym = true) 
-{
-	double srb ;
-
-	if(sym)
-
-		srb = makeStack(plot,cuts,label,title, rebin,100,0,5,yMax,false);
-
-	else
-		srb = makeStack(plot,cuts,label, title, rebin, 200, -5 , 5, yMax,false);
-
-	return srb;
-}
-*/
-/*
-double maxEta()
-{
-	double max = 0;
-	for (int i = 0 ; i < idx->size(); i++ )
-	{
-	   if(eta->at(idx->at(i)) > max)
-		max = eta->at(idx->at(i));
-	}
-	return max;
-}
-*/
-
 double makeStack(TString plot,TString cuts, TString Signal, TString label, TString yLabel, TString title,int sigScale = 1, int rebin = 1,int bins=1000, int xMin=0, int xMax=1000, TString sScale="1",bool bSep = false, bool bData = true, TString sExt="")
 {
 	gROOT->Clear();
-	TString sPath = "/home/t3-ku/stringer/CMSSW_7_4_8_patch1/src/UserCode/TprimeAna/test/Selection0307/";
-
+	//TString sPath = "/home/t3-ku/stringer/CMSSW_7_4_8_patch1/src/UserCode/TprimeAna/test/Selection0308/";
+        TString sPath = "/home/t3-ku/erichjs/work/B2G/CMSSW_7_4_8_patch1/src/TprimeAna/test/Selection0307/";
 	TH1::SetDefaultSumw2();
 
 	TChain * tree2 = new TChain("ana/tree");
@@ -345,6 +315,8 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 
 	TChain * treeData = new TChain("ana/tree");
 
+	//cout << "Data files: " << treeData->Add(sPath+"../Selection0307/JetHT_Prompt.root") << endl;
+	//cout << "Data files: " << treeData->Add(sPath+"../Selection0307/JetHT_05Oct.root") << endl;
 	cout << "Data files: " << treeData->Add(sPath+"JetHT_Prompt.root") << endl;
 	cout << "Data files: " << treeData->Add(sPath+"JetHT_05Oct.root") << endl;
 
@@ -438,8 +410,8 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
         cout << "QCD1500: " << tree9->Add(sPath+"QCDHT1500"+sExt+".root") << endl;
         cout << "QCD2000: " << tree10->Add(sPath+"QCDHT2000"+sExt+".root") << endl;
         cout << "WJets: " << tree11->Add(sPath+"WJets"+sExt+".root") << endl;
-	cout << "ST: " << tree12->Add(sPath+"ST*"+sExt+".root") << endl;
-
+	cout << "STtop: " << tree12->Add(sPath+"ST_top"+sExt+".root") << endl;
+        cout << "STantitop: " << tree12->Add(sPath+"ST_antitop"+sExt+".root") << endl;
   	
         gStyle->SetOptStat(0);
 
@@ -455,7 +427,10 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
         TH1D *hist10 = new TH1D("ht10","",bins,xMin,xMax);
 	TH1D *hist11 = new TH1D("ht11","",bins,xMin,xMax);
 	TH1D *hist12 = new TH1D("ht12","",bins,xMin,xMax);
-	TH1D *histData = new TH1D("htdata","",bins,xMin,xMax);;
+	TH1D *histData = new TH1D("htdata","",bins,xMin,xMax);
+        histData->SetBinErrorOption(TH1::kPoisson);
+
+
 
 /*    
         TH1D * hist1 = new TH1D("ht1","HT",1000,0,2000);
@@ -580,7 +555,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	//TString datacuts(cuts);
         //datacuts = datacuts.ReplaceAll("PUWeight(npuTrue)*","");
 	
-	treeData->Draw(plot+">>htdata",cuts);
+	treeData->Draw(plot+">>htdata",cuts,"E");
 	cout << "Plotted Data" << endl;
 
 	//Dump Events to text file
@@ -621,6 +596,9 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	histData = (TH1D*) gROOT->FindObject("htdata")->Clone("Data");
 
 	cout << "TTJets SF: " << 831.76/nEvts["TTJets"]*lumi << endl;
+	cout << "QCD700 SF: " << 6831/nEvts["QCDHT700"]*lumi << endl;
+	cout << "QCD700 SF: " << 1207/nEvts["QCDHT1000"]*lumi << endl;
+
 	
         hist2->Scale(831.76/nEvts["TTJets"]*lumi);
         //hist3->Scale(672*lumi);
@@ -697,11 +675,18 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	fromStack->SetTitle(title);
 /*	
 	for ( int i = 0 ; i < fromStack->GetNbinsX() ; i++) {
-	   double statErr = pow(fromStack->GetBinError(i),2);
-	   double csErrTotal = pow(hist2->GetBinContent(i)*csErr[0],2);
+	//   double statErr = pow(fromStack->GetBinError(i),2);
+	//   double csErrTotal = pow(hist2->GetBinContent(i)*csErr[0],2);
 	   
-	//   cout << "Bin: " << i << "  Stat: " << fromStack->GetBinError(i) << " cont: " << fromStack->GetBinContent(i) << endl; 
-
+	   cout << "Stack Bin: " << i << "  Stat: " << fromStack->GetBinError(i) << " cont: " << fromStack->GetBinContent(i) << endl; 
+	   cout << "TT Bin: " << i << "  Stat: " << hist2->GetBinError(i) << " cont: " << hist2->GetBinContent(i) << endl; 
+	   cout << "QCD700 Bin: " << i << "  Stat: " << hist7->GetBinError(i) << " cont: " << hist7->GetBinContent(i) << endl; 
+	   cout << "QCD1000 Bin: " << i << "  Stat: " << hist8->GetBinError(i) << " cont: " << hist8->GetBinContent(i) << endl; 
+	   cout << "QCD1500 Bin: " << i << "  Stat: " << hist9->GetBinError(i) << " cont: " << hist9->GetBinContent(i) << endl; 
+	   cout << "QCD2000 Bin: " << i << "  Stat: " << hist10->GetBinError(i) << " cont: " << hist10->GetBinContent(i) << endl; 
+	   cout << "W Bin: " << i << "  Stat: " << hist11->GetBinError(i) << " cont: " << hist11->GetBinContent(i) << endl; 
+	   cout << "ST Bin: " << i << "  Stat: " << hist12->GetBinError(i) << " cont: " << hist12->GetBinContent(i) << endl; 
+	}
 	  // csErrTotal += pow(hist3->GetBinContent(i)*csErr[1],2);
 	  // csErrTotal += pow(hist4->GetBinContent(i)*csErr[2],2);
 	  // csErrTotal += pow(hist5->GetBinContent(i)*csErr[3],2);
@@ -980,99 +965,7 @@ romStack->GetBinContent(i)) * ey[i]/fromStack->GetBinContent(i))));
 */
 
 } 
-void Closure(Int_t H_Sj, Int_t TTag)
-{
-	TString out,cut;
-	out.Form("mass(ptAK8[HTagIdxSB%d[0]],etaAK8[HTagIdxSB%d[0]],phiAK8[HTagIdxSB%d[0]],MAK8[HTagIdxSB%d[0]], ptAK8[TTagIdxSB[0]],etaAK8[TTagIdxSB[0]],phiAK8[TTagIdxSB[0]],MAK8[TTagIdxSB[0]])",H_Sj,H_Sj,H_Sj,H_Sj);
 
-	cut.Form("htak4>900&&@HTagIdxSB%d[0].size()>0&&@TTagIdxSB[0].size()>0&&fMaxEtaAK4<2.0",H_Sj);
-	makeStack(out,cut,"T' (GeV)", "SideBand" ,100,1000,0,2000,100);
-
-	TH1D * hBackEst = (TH1D*) gROOT->FindObject("hBack");
-
-	if(!hBackEst) {
-		cout << "Can't find Background plot" << endl;
-		return;
-	}
-
-//	TH1D * hBackEst = (TH1D*)((TH1D*)(histSB->GetStack()->Last()))->Clone();
-	
-	
-	out.Form("mass(ptAK8[HTagIdx[0]],etaAK8[HTagIdx[0]],phiAK8[HTagIdx[0]],MAK8[HTagIdx[0]], ptAK8[TTagIdx%02d[0]],etaAK8[TTagIdx%02d[0]],phiAK8[TTagIdx%02d[0]],MAK8[TTagIdx%02d[0]])",TTag,TTag,TTag,TTag);
-        cut.Form("htak4>900&&@HTagIdx[0].size()>0&&@TTagIdx%02d[0].size()>0&&fMaxEtaAK4>2.0",TTag);
-        makeStack(out,cut,"T' (GeV)","Signal Region",100,1000,0,2000,100);
-
-	
-	TH1D * histData = (TH1D*) gROOT->FindObject("htdata");
-
-	if(!histData) {
-		cout << "Can't find data plot" << endl;
-		return;
-	}
-	
-	double SF = histData->Integral(0,1000)/hBackEst->Integral(0,1000);
-	cout << "Scale Factor: " <<SF << endl;
-
-	hBackEst->Scale(SF);
-	
-	TCanvas * c1 = (TCanvas *) gROOT->FindObject("c1");
-
-	//DrawPlot( c1 , hBackEst , histData );
-
-
-}
-
-/*
-void MCPlot(Int_t H_Sj, Int_t TTag)
-{
-        TString out,cut;
-        out.Form("mass(ptAK8[HTagIdxSB%d[0]],etaAK8[HTagIdxSB%d[0]],phiAK8[HTagIdxSB%d[0]],MAK8[HTagIdxSB%d[0]], ptAK8[TTagIdxSB[0]],etaAK8[TTagIdxSB[0]],phiAK8[TTagIdxSB[0]],MAK8[TTagIdxSB[0]])",H_Sj,H_Sj,H_Sj,H_Sj);
-
-        cut.Form("htak4>900&&@HTagIdxSB%d[0].size()>0&&@TTagIdxSB[0].size()>0&&fMaxEtaAK4<2.0",H_Sj);
-        makeStack(out,cut,"T' (GeV)", "SideBand" ,100,1000,0,2000,100);
-
-        TH1D * hBackEst = (TH1D*) gROOT->FindObject("hBack");
-
-        if(!hBackEst) {
-                cout << "Can't find Background plot" << endl;
-                return;
-        }
-
-	
-
-        //TH1D * hBackEst = (TH1D*)((TH1D*)(histSB->GetStack()->Last()))->Clone();
-
-
-        out.Form("mass(ptAK8[HTagIdx[0]],etaAK8[HTagIdx[0]],phiAK8[HTagIdx[0]],MAK8[HTagIdx[0]], ptAK8[TTagIdx%02d[0]],etaAK8[TTagIdx%02d[0]],phiAK8[TTagIdx%02d[0]],MAK8[TTagIdx%02d[0]])",TTag,TTag,TTag,TTag);
-        cut.Form("htak4>900&&@HTagIdx[0].size()>0&&@TTagIdx%02d[0].size()>0&&fMaxEtaAK4>2.0",TTag);
-        makeStack(out,cut,"T' (GeV)","Signal Region",100,1000,0,2000,100);
-
-	cout << "processed data" << endl; 
-	
-        TH1D * histQCD = (TH1D* )((TH1D*) gROOT->FindObject("histQCD"))->Clone();
-        TH1D * histW = (TH1D*)((TH1D*) gROOT->FindObject("ht11"))->Clone();
-        TH1D * histTT = (TH1D*) ((TH1D*) gROOT->FindObject("ht2"))->Clone();
-
-        TH1D * histData = (TH1D*) gROOT->FindObject("hBack");
-	
-	cout << histQCD << histW << histTT << histData << endl;
-        if(!histData) {
-                cout << "Can't find data plot" << endl;
-                return;
-        }
-
-        double SF = histData->Integral(0,1000)/hBackEst->Integral(0,1000);
-        cout << "Scale Factor: " <<SF << endl;
-
-        hBackEst->Scale(SF);
-
-        TCanvas * c1 = (TCanvas *) gROOT->FindObject("c1");
-
-        DrawPlot( c1 , hBackEst , histData ,0, histQCD, histW, histTT);
-
-}
-
-*/
 
 
 void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHEweight = 0, TString sOpt = "Nominal")//TString plot, TString cutA, TString cutB, TString cutC, TString cutD)
@@ -1098,7 +991,7 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
 
 	//TString sScale = "WtTrig(ht)*EvtWeight*EvtWtPV";
 	TString sScale = "EvtWeight*EvtWtPV";
-
+        //TString sScale = "WeightHT(ht)*EvtWeight*EvtWtPV";
 	//sScale += "*EvtWtHT";
 	
 //	if(HTscale == 1) sScale += "Up";
@@ -1118,15 +1011,15 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
 	if(ttagSF == 1)  tScale = "*topSFUp(ptTopTagged)";
 	if(ttagSF == -1)  tScale = "*topSFDown(ptTopTagged)";
 
-
-	TString cuts ;
+        TString str_LHEweight;
+        str_LHEweight.Form("%i",LHEweight); 
+	TString cuts = "ht>1100&&" ;
 	if(LHEweight > 0){
-		sScale = "*lhewts.second";
-		cuts = "lhewts.first=="+LHEweight+"&&"; 
+		sScale += "*lhewts.second";
+		cuts += "lhewts.first=="+str_LHEweight+"&&"; 
 	}
 
-
-	makeStack("ht", cuts+"isRegionA" ,"Tprime1200_LH","HT GeV","Events","Cut A",1,1,40,1000,2600,sScale,false,false,sExt);
+	makeStack("ht", cuts+"isRegionA" ,"Tprime1200_LH","HT GeV","Events","Cut A",1,2,40,1000,2600,sScale,false,false,sExt);
 
 
         TH1D * histA = (TH1D*) gROOT->FindObject("htdata")->Clone();
@@ -1145,7 +1038,7 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
 	if(bMt) 
 		makeStack("mtprimeDummy", cuts+"isRegionB","Tprime1200_LH","HT GeV","Events","Cut B",1,1,36,600,2400,sScale+tScale,false,false,sExt);
 	else
-        	makeStack("ht",cuts+"isRegionB","Tprime1200_LH","HT GeV","Events","Cut B",1,1,40,1000,2600,sScale+tScale,false,false,sExt);
+        	makeStack("ht",cuts+"isRegionB","Tprime1200_LH","HT GeV","Events","Cut B",1,2,40,1000,2600,sScale+tScale,false,false,sExt);
 
 
         TH1D * histB = (TH1D*) gROOT->FindObject("htdata")->Clone();
@@ -1162,7 +1055,7 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
 
 	
 
-        makeStack("ht", cuts+"isRegionC","Tprime1200_LH","HT GeV","Events","Cut C",1,1,40,1000,2600,sScale,false,false,sExt);
+        makeStack("ht", cuts+"isRegionC","Tprime1200_LH","HT GeV","Events","Cut C",1,2,40,1000,2600,sScale,false,false,sExt);
         TH1D * histC = (TH1D*) gROOT->FindObject("htdata")->Clone();
         TH1D * histCQCD = (TH1D*) gROOT->FindObject("histQCD")->Clone();
 	TH1D * histCTT = (TH1D*) gROOT->FindObject("TTJets")->Clone();
@@ -1176,7 +1069,7 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
 
         if (bMt) makeStack("mtprime", cuts+"isRegionD","Tprime1200_LH","HT GeV","Events","Cut D",1,1,36,600,2400,sScale+tScale,false,false,sExt);
 	else
-        	makeStack("ht", cuts+"isRegionD","Tprime1200_LH","HT GeV","Events","Cut D",1,1,40,1000,2600,sScale+tScale,sExt);
+        	makeStack("ht", cuts+"isRegionD","Tprime1200_LH","HT GeV","Events","Cut D",1,2,40,1000,2600,sScale+tScale,false,false,sExt);
 
         //cout << "TT A: " << histATT->Integral(0,1000) << endl;
 
@@ -1193,6 +1086,11 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
         cout << "TT B: " << histBTT->Integral(0,1000) << endl;
         cout << "TT C: " << histCTT->Integral(0,1000) << endl;
         cout << "TT D: " << histDTT->Integral(0,1000) << endl;
+
+	cout << "ST A: " << histAST->Integral(0,1000) << endl;
+        cout << "ST B: " << histBST->Integral(0,1000) << endl;
+        cout << "ST C: " << histCST->Integral(0,1000) << endl;
+        cout << "ST D: " << histDST->Integral(0,1000) << endl;
 
         cout << "W A: " << histAW->Integral(0,1000) << endl;
         cout << "W B: " << histBW->Integral(0,1000) << endl;
@@ -1225,10 +1123,10 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
 
 	//MC
 
-        cout << "Data A: " << histA->Integral(0,1000) << endl;
-        cout << "Data B: " << histB->Integral(0,1000) << endl;
-        cout << "Data C: " << histC->Integral(0,1000) << endl;
-        cout << "Data D: " << histD->Integral(0,1000) << endl;
+        cout << "DataQCD A: " << histA->Integral(0,1000) << endl;
+        cout << "DataQCD B: " << histB->Integral(0,1000) << endl;
+        cout << "DataQCD C: " << histC->Integral(0,1000) << endl;
+        cout << "DataQCD D: " << histD->Integral(0,1000) << endl;
 
 
         c1 = new TCanvas("c2");
