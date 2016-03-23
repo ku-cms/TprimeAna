@@ -257,7 +257,7 @@ def DrawPresel(fin, hist, xlow, xhigh, doratiofit, xLabel, yLabel, doLog, doData
 
   c0.cd()
 
-  CMS_lumi.lumi_13TeV = "2.2/ fb"
+  CMS_lumi.lumi_13TeV = "2.3/ fb"
   CMS_lumi.writeExtraText = 1
   CMS_lumi.extraText = "Preliminary"
   
