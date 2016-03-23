@@ -3,6 +3,7 @@
 import os, re, sys, optparse, commands, shutil, imp
 import math, ROOT
 
+helper   = imp.load_source('fix'     , './help.py')
 tdrstyle = imp.load_source('tdrstyle', './tdrstyle.py')
 CMS_lumi = imp.load_source('CMS_lumi', './CMS_lumi.py') 
 
@@ -25,6 +26,14 @@ def DrawPresel(fin, hist, xlow, xhigh, doratiofit, xLabel, yLabel, doLog, doData
   htp1200LH    = fin.Get('Tprime1200_LH')
  # htp1500LH    = fin.Get('Tp1500__'+hist)
  # htp1800LH    = fin.Get('Tp1800__'+hist)
+
+  helper.fix(hdata     )
+  helper.fix(httjets   )
+  helper.fix(hsingletop)
+  helper.fix(hwjets    )
+  helper.fix(hqcd      )
+  helper.fix(htp1200LH )
+
   if doData:
     ndata      = hdata.Integral() 
     nttjets    = httjets.Integral() 
@@ -106,14 +115,14 @@ def DrawPresel(fin, hist, xlow, xhigh, doratiofit, xLabel, yLabel, doLog, doData
     pad0.SetLogy()
   pad0.Draw() 
   pad0.cd()
-  pad1.SetBottomMargin(0.05)
+  pad0.SetBottomMargin(0.05)
  # if doData:
   hdata.GetYaxis().SetTitle(yLabel)
   hdata.GetXaxis().SetTitleSize(0.14*0.3/0.7)
   hdata.GetXaxis().SetTitleOffset(0.5) 
   hdata.GetYaxis().SetTitleSize(0.14*0.3/0.7)
   hdata.GetYaxis().SetLabelSize(0.14*0.3/0.7)
-  hdata.GetYaxis().SetTitleOffset(0.28*7/3)
+  hdata.GetYaxis().SetTitleOffset(0.35*7/3)
 #  else:
 #    hbkg.GetYaxis().SetTitle(yLabel)
 #    hbkg.GetXaxis().SetTitleSize(0.14*0.3/0.7)
@@ -130,6 +139,11 @@ def DrawPresel(fin, hist, xlow, xhigh, doratiofit, xLabel, yLabel, doLog, doData
   hdata.Draw('e1same')
   htp1200LH.Draw('histsame')
   #htp1800LH.Draw('histsame')
+
+  if xlow < hdata.GetBinLowEdge(1):
+    xlow = hdata.GetBinLowEdge(1)
+  if xhigh > hdata.GetBinLowEdge(hdata.GetNbinsX()) + hdata.GetBinWidth(hdata.GetNbinsX()): 
+    xhigh = hdata.GetBinLowEdge(hdata.GetNbinsX()) + hdata.GetBinWidth(hdata.GetNbinsX())
 
 #  if doData:
   hdata.GetXaxis().SetRangeUser(xlow,xhigh)
@@ -200,17 +214,22 @@ def DrawPresel(fin, hist, xlow, xhigh, doratiofit, xLabel, yLabel, doLog, doData
   pad1.Draw() 
   pad1.cd()
   pad1.SetTopMargin(0.05)
-  pad1.SetBottomMargin(0.3)
+  pad1.SetBottomMargin(0.4)
   if doData:
+    hdata.GetXaxis().SetTitleSize(0)
+
+    hratio.GetXaxis().SetTitle(hdata.GetXaxis().GetTitle())
     hratio.GetXaxis().SetTitleSize(0.14)
     hratio.GetXaxis().SetLabelSize(0.14)
-    hratio.GetXaxis().SetTickLength(hdata.GetXaxis().GetTickLength()*7/3)
-    
+    hratio.GetXaxis().SetTickLength(hdata.GetYaxis().GetTickLength())
+    hratio.GetXaxis().SetTitleOffset(1.20)
+    hratio.GetXaxis().SetNdivisions(510)
+
     hratio.GetYaxis().SetTitle("Data/MC")
     hratio.GetYaxis().SetTitleSize(0.14)
     hratio.GetYaxis().SetLabelSize(0.14)
     hratio.GetYaxis().SetTickLength(hdata.GetYaxis().GetTickLength())
-    hratio.GetYaxis().SetTitleOffset(0.28)
+    hratio.GetYaxis().SetTitleOffset(0.35)
     hratio.GetYaxis().SetNdivisions(504)
   
     hratio.Draw("e1")
