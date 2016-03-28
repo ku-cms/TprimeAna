@@ -97,19 +97,41 @@ double WeightHT(double HT)
 //Par0: 0.25+/-0.02
 //Par1: -0.00025+/-0.000012
 
-	if(HT < 1100 || HT > 2600)
+	if(HT < 1100 || HT > 2700)
 		return 1;
 	else
 		return (1+(-0.0001961*HT + 0.262));
+//	else
+//		return (1+(-0.0001618*HT + 0.212)); //HT fit w/ >2.4eta
+//	else
+//		return (1+(-0.0002037*HT + 0.271)); //HT fit w/o >2.4eta
 	
+}
+double WeightHTUp(double HT)
+{
+        if(HT < 1100 || HT > 2700)
+                return 1;
+        else
+                return (1+0.019+((-0.0001618+0.0000139)*HT + 0.212));
+//        else 
+//                return (1+0.007+((-0.0002037+0.0000052)*HT + 0.271));
+}
+double WeightHTDown(double HT)
+{
+        if(HT < 1100 || HT > 2700)
+                return 1;
+        else
+                return (1-0.019+((-0.0001618-0.0000139)*HT + 0.212));
+//        else 
+//                return (1-0.007+((-0.0002037-0.0000052)*HT + 0.271));
 }
 
 
-void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TString,TH1D*> &hSignal, TH1D * hQCD = 0, TH1D * histW = 0, TH1D * histTT = 0, TH1D * histST = 0 )
+void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TString,TH1D*> &hSignal, TH1D * hQCD = 0, TH1D * histW = 0, TH1D * histTT = 0, TH1D * histST = 0, bool signalOnly = 0)
 {
 
 
-	TString lumiText = "2.2 fb^{-1} (13 TeV)";
+	TString lumiText = "2.3 fb^{-1} (13 TeV)";
 	TString cmsText = "#bf{CMS}";
 	TString extraText = "Preliminary";
 
@@ -140,7 +162,7 @@ void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TString,TH1D*>
 	
 	Int_t yMax = 0;
 
-	if(hBack) {
+	if(hBack && !signalOnly) {
 		for(unsigned i = 0 ; i < unsigned(hBack->GetNbinsX()) ; i++) 
 		{
 
@@ -183,7 +205,7 @@ void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TString,TH1D*>
 	}
 	
 	TH1D* hBackErr =0; 
-	if(hBack) {
+	if(hBack && !signalOnly) {
 		hBackErr = (TH1D*) hBack->Clone("hBackErr"); 
 		hBackErr->SetMarkerStyle(0);
 		hBackErr->SetFillColor(kGray+2);
@@ -202,7 +224,7 @@ void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TString,TH1D*>
 	double x1 = 0.8;
 
 	// Find best position for Legend.
-	if(hBack) {
+	if(hBack && !signalOnly) {
 	   if(hBack->GetMaximumBin() > hBack->GetXaxis()->GetNbins() * .4){
 		x0 = .2;
 		x1 = .4;
@@ -211,8 +233,12 @@ void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TString,TH1D*>
 		x0 = 0.6;
 		x1 = 0.8;	
 	   }
+        }
+        if(signalOnly) {
+           x0 = 0.6;
+           x1 = 0.855555;
 	}
-        TLegend * leg = new TLegend(x0,0.6,x1,0.85);
+        TLegend * leg = new TLegend(x0,0.6,x1,0.9);
 
 	//Draw signal histos from vector.
 	int cnt = 0;
@@ -220,8 +246,24 @@ void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TString,TH1D*>
 	    for( std::map< TString, TH1D* >::iterator it = hSignal.begin() ; it != hSignal.end(); it++ ) {
 		it->second->SetLineColor(kRed+cnt);
 		it->second->SetMarkerStyle(0);
+                if(signalOnly){
+                    it->second->SetLineColor(1+cnt);
+                    it->second->SetLineStyle(1+cnt);
+                    if (it == hSignal.begin()){
+                        it->second->GetYaxis()->SetTitle(hBack->GetYaxis()->GetTitle());
+                        it->second->GetYaxis()->SetTitleSize(hBack->GetYaxis()->GetTitleSize());
+                        it->second->GetYaxis()->SetTitleOffset(hBack->GetYaxis()->GetTitleOffset());
+                        it->second->GetXaxis()->SetTitle(hBack->GetXaxis()->GetTitle());
+                        
+                    }
+                }
 		it->second->Draw("hist same"); 
-		leg->AddEntry(it->second,it->first);
+                if (it->first == "Tprime1000_LH") leg->AddEntry(it->second,"M(T) = 1000 GeV, LH (1 pb)");
+                else if ( it->first == "Tprime1200_LH") leg->AddEntry(it->second,"M(T) = 1200 GeV, LH (1 pb)");
+                else if ( it->first == "Tprime1500_LH") leg->AddEntry(it->second,"M(T) = 1500 GeV, LH (1 pb)");
+                else if ( it->first == "Tprime1800_LH") leg->AddEntry(it->second,"M(T) = 1800 GeV, LH (1 pb)");
+                else if ( it->first == "Tprime1200_RH") leg->AddEntry(it->second,"M(T) = 1200 GeV, RH (1 pb)");
+                else if ( it->first == "Tprime1800_RH") leg->AddEntry(it->second,"M(T) = 1800 GeV, RH (1 pb)"); 
 		double integral, err;
 		integral = it->second->IntegralAndError(0,1000,err);
 		cout << it->first << " = " << integral << " +/- " << err << endl;
@@ -237,7 +279,7 @@ void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TString,TH1D*>
         	leg->AddEntry(histST,"SingleTop");
 	}
         if(hData) leg->AddEntry(hData,"2015D Data");
-	if(hBack) {
+	if(hBack && !signalOnly) {
 		leg->AddEntry(hBackErr,"Stat.+x-sec unc.","F");
 	}	
 
@@ -257,9 +299,9 @@ void DrawPlot( TCanvas * c1, TH1D * hBack, TH1D * hData, std::map<TString,TH1D*>
 */
 	pad1->cd();
 
-  	latex.DrawLatex(.8,.96,lumiText);
-	latex.DrawLatex(x0,.89,cmsText);
-	latex.DrawLatex(x1,.86,extraText);
+  	latex.DrawLatex(.95,.96,lumiText);
+	latex.DrawLatex(0.2,.96,cmsText);
+	latex.DrawLatex(0.4,.96,extraText);
 	
 }
 
@@ -319,7 +361,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	//cout << "Data files: " << treeData->Add(sPath+"../Selection0307/JetHT_05Oct.root") << endl;
 	cout << "Data files: " << treeData->Add(sPath+"JetHT_Prompt.root") << endl;
 	cout << "Data files: " << treeData->Add(sPath+"JetHT_05Oct.root") << endl;
-
+        cout << "Data files: " << treeData->Add(sPath+"JetHT_2015C.root") << endl; 
 	std::map<TChain* , TString> fSig ;
 	std::map<TString , double> nEvts;	
 
@@ -428,7 +470,6 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	TH1D *hist11 = new TH1D("ht11","",bins,xMin,xMax);
 	TH1D *hist12 = new TH1D("ht12","",bins,xMin,xMax);
 	TH1D *histData = new TH1D("htdata","",bins,xMin,xMax);
-        histData->SetBinErrorOption(TH1::kPoisson);
 
 
 
@@ -555,16 +596,16 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	//TString datacuts(cuts);
         //datacuts = datacuts.ReplaceAll("PUWeight(npuTrue)*","");
 	
-	treeData->Draw(plot+">>htdata",cuts,"E");
+	treeData->Draw(plot+">>htdata",cuts);
 	cout << "Plotted Data" << endl;
-
+        histData->SetBinErrorOption(TH1::kPoisson);
 	//Dump Events to text file
 	//
 	
 	//treeData->Scan("htak4:mass(ptAK8[HTagIdx[0]],etaAK8[HTagIdx[0]],phiAK8[HTagIdx[0]],MAK8[HTagIdx[0]],ptAK8[TTagIdx03[0]],etaAK8[TTagIdx03[0]],phiAK8[TTagIdx03[0]],MAK8[TTagIdx03[0]]):EvtWeight[0]:EvtWeight[4]/1.21:WeightHT(htak4)","htak4>1000&&@HTagIdx.size()>0&&@TTagIdx03.size()>0&&bTrigger",0,0);
 	
 
-	double lumi = 2197  ; //1.929/2 ;//1.28/2;
+	double lumi = 2264.524  ; //1.929/2 ;//1.28/2;
 
 	std::map<TString , TH1D*> hSignal;
 	int c = 0;
@@ -747,8 +788,8 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	cout << "S/sqrt(B): " << srb << endl;
 
 
-	int data = histData->Integral(0,1000);
-	cout << "Data Events: " << data << endl;
+	int data = histData->IntegralAndError(0,1000,err);
+	cout << "Data Events: " << data << " +/- " << err << endl;
 	
 	//double SF = data/back;
 	//cout << "Scale Factor: "<< SF << endl;
@@ -976,7 +1017,7 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
 	if(sOpt.BeginsWith("_JE")) 
 		sExt = sOpt;
 
-        TString lumiText = "2.2 fb^{-1} (13 TeV)";
+        TString lumiText = "2.3 fb^{-1} (13 TeV)";
         TString cmsText = "#bf{CMS}";
         TString extraText = "Preliminary";
 
@@ -990,8 +1031,8 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
         latex.SetTextSize(.04);
 
 	//TString sScale = "WtTrig(ht)*EvtWeight*EvtWtPV";
-	TString sScale = "EvtWeight*EvtWtPV";
-        //TString sScale = "WeightHT(ht)*EvtWeight*EvtWtPV";
+	//TString sScale = "EvtWeight*EvtWtPV";
+        TString sScale = "WeightHT(ht)*EvtWeight*EvtWtPV";
 	//sScale += "*EvtWtHT";
 	
 //	if(HTscale == 1) sScale += "Up";
@@ -1019,7 +1060,7 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
 		cuts += "lhewts.first=="+str_LHEweight+"&&"; 
 	}
 
-	makeStack("ht", cuts+"isRegionA" ,"Tprime1200_LH","HT GeV","Events","Cut A",1,2,40,1000,2600,sScale,false,false,sExt);
+	makeStack("ht", cuts+"isRegionA" ,"Tprime1200_LH","HT GeV","Events","Cut-A",1,1,20,1100,2700,sScale,false,false,sExt);
 
 
         TH1D * histA = (TH1D*) gROOT->FindObject("htdata")->Clone();
@@ -1036,9 +1077,9 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
         TCanvas * c1 = (TCanvas * ) gROOT->FindObject("c1");
         c1->Print("CutAdata.pdf");
 	if(bMt) 
-		makeStack("mtprimeDummy", cuts+"isRegionB","Tprime1200_LH","HT GeV","Events","Cut B",1,1,36,600,2400,sScale+tScale,false,false,sExt);
+		makeStack("mtprimeDummy", cuts+"isRegionB","Tprime1200_LH","HT GeV","Events","Cut-B_mt",1,1,36,600,2400,sScale+tScale,false,false,sExt);
 	else
-        	makeStack("ht",cuts+"isRegionB","Tprime1200_LH","HT GeV","Events","Cut B",1,2,40,1000,2600,sScale+tScale,false,false,sExt);
+        	makeStack("ht",cuts+"isRegionB","Tprime1200_LH","HT GeV","Events","Cut-B",1,1,20,1100,2700,sScale+tScale,false,false,sExt);
 
 
         TH1D * histB = (TH1D*) gROOT->FindObject("htdata")->Clone();
@@ -1055,7 +1096,7 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
 
 	
 
-        makeStack("ht", cuts+"isRegionC","Tprime1200_LH","HT GeV","Events","Cut C",1,2,40,1000,2600,sScale,false,false,sExt);
+        makeStack("ht", cuts+"isRegionC","Tprime1200_LH","HT GeV","Events","Cut-C",1,1,20,1100,2700,sScale,false,false,sExt);
         TH1D * histC = (TH1D*) gROOT->FindObject("htdata")->Clone();
         TH1D * histCQCD = (TH1D*) gROOT->FindObject("histQCD")->Clone();
 	TH1D * histCTT = (TH1D*) gROOT->FindObject("TTJets")->Clone();
@@ -1067,9 +1108,9 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
         c1 = (TCanvas * ) gROOT->FindObject("c1");
         c1->Print("CutCdata.pdf");
 
-        if (bMt) makeStack("mtprime", cuts+"isRegionD","Tprime1200_LH","HT GeV","Events","Cut D",1,1,36,600,2400,sScale+tScale,false,false,sExt);
+        if (bMt) makeStack("mtprime", cuts+"isRegionD","Tprime1200_LH","HT GeV","Events","Cut-D_mt",1,1,36,600,2400,sScale+tScale,false,false,sExt);
 	else
-        	makeStack("ht", cuts+"isRegionD","Tprime1200_LH","HT GeV","Events","Cut D",1,2,40,1000,2600,sScale+tScale,false,false,sExt);
+        	makeStack("ht", cuts+"isRegionD","Tprime1200_LH","HT GeV","Events","Cut-D",1,1,20,1100,2700,sScale+tScale,false,false,sExt);
 
         //cout << "TT A: " << histATT->Integral(0,1000) << endl;
 
@@ -1398,19 +1439,24 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
 
 void CutFlow(TString plot,TString Signal)
 {
-	THStack * cutflow = new THStack("hCuts","CutFlow");
-	TH1D * histQCD = new TH1D("hQCDflow","QCD Flow",4,0,4);
-	TH1D * histTT = new TH1D("hTTflow","TT Flow",4,0,4);
-	TH1D * histW = new TH1D("hWflow","W Flow",4,0,4);
-	TH1D * histSig = new TH1D("histSig","Sig Flow",4,0,4);
+	TString lumiText = "2.3 fb^{-1} (13 TeV)";
+	TString cmsText = "#bf{CMS}";
+	TString extraText = "Preliminary";
+
+	THStack * cutflow = new THStack("hCuts","");
+	TH1D * histQCD = new TH1D("hQCDflow","QCD Flow",3,0,3);
+	TH1D * histTT = new TH1D("hTTflow","TT Flow",3,0,3);
+	TH1D * histW = new TH1D("hWflow","W Flow",3,0,3);
+	TH1D * histST = new TH1D("hSTflow","ST Flow",3,0,3);
+	TH1D * histSig = new TH1D("histSig","Sig Flow",3,0,3);
 	
-        makeStack(plot, "htak4>0",Signal,"HT GeV","Events/50 GeV", "Presel",1,1,40,0,2000,"EvtWeight[0]*EvtWeight[4]/1.21*WeightHT(htak4)");
+        makeStack(plot, "ht>1100",Signal,"HT GeV","Events/80 GeV", "Presel",1,1,20,1100,2700,"EvtWeight*EvtWtPV");
 	
 	TH1D * histP = (TH1D*) gROOT->FindObject("histQCD")->Clone();
-        TH1D * histPTT = (TH1D*) gROOT->FindObject("ht2")->Clone();
-        TH1D * histPW = (TH1D*) gROOT->FindObject("ht11")->Clone();
+        TH1D * histPTT = (TH1D*) gROOT->FindObject("TTJets")->Clone();
+        TH1D * histPW = (TH1D*) gROOT->FindObject("WJets")->Clone();
+        TH1D * histPST = (TH1D*) gROOT->FindObject("ST")->Clone();
         TH1D * histPSig = (TH1D*) gROOT->FindObject(Signal)->Clone();
-
         histQCD->SetBinContent(1,histP->Integral(0,1000));
         cout << "QCDP: "<< histP->Integral(0,1000) << endl;
 
@@ -1420,14 +1466,18 @@ void CutFlow(TString plot,TString Signal)
         histW->SetBinContent(1,histPW->Integral(0,1000));
         cout << "WP: "<< histPW->Integral(0,1000) << endl;
 
-	histSig->SetBinContent(1,histPSig->Integral(0,1000));
+	histST->SetBinContent(1,histPST->Integral(0,1000));
+	cout << "STP: "<< histPST->Integral(0,1000) << endl;
+	
+        histSig->SetBinContent(1,histPSig->Integral(0,1000));
 	cout << "Sig1: "<< histPSig->Integral(0,1000) << endl;
 
-        makeStack(plot, "htak4>1000",Signal,"HT GeV","Events/50 GeV","HT900",1,1,40,0,2000,"EvtWeight[0]*EvtWeight[4]/1.21*WeightHT(htak4)");
+        makeStack(plot, "ht>1100&&idxHTagged",Signal,"HT GeV","Events/80 GeV","HTag",1,1,20,1100,2700,"EvtWeight*EvtWtPV*btagsf");
 
         TH1D * histA = (TH1D*) gROOT->FindObject("histQCD")->Clone();
-        TH1D * histATT = (TH1D*) gROOT->FindObject("ht2")->Clone();
-        TH1D * histAW = (TH1D*) gROOT->FindObject("ht11")->Clone();
+        TH1D * histATT = (TH1D*) gROOT->FindObject("TTJets")->Clone();
+        TH1D * histAW = (TH1D*) gROOT->FindObject("WJets")->Clone();
+        TH1D * histAST = (TH1D*) gROOT->FindObject("ST")->Clone();
         TH1D * histASig = (TH1D*) gROOT->FindObject(Signal)->Clone();
 
 	histQCD->SetBinContent(2,histA->Integral(0,1000));
@@ -1439,14 +1489,18 @@ void CutFlow(TString plot,TString Signal)
 	histW->SetBinContent(2,histAW->Integral(0,1000));
 	cout << "W1: "<< histAW->Integral(0,1000) << endl;
 
+	histST->SetBinContent(2,histAST->Integral(0,1000));
+	cout << "ST1: "<< histAST->Integral(0,1000) << endl;
+	
 	histSig->SetBinContent(2,histASig->Integral(0,1000));
 	cout << "Sig1: "<< histASig->Integral(0,1000) << endl;
 
-        makeStack(plot, "htak4>1000&&@HTagIdx.size()>0",Signal,"HT (GeV)","Events/50 GeV","HTag",1,1,40,0,2000,"EvtWeight[0]*EvtWeight[4]/1.21*WeightHT(htak4)");
+        makeStack(plot, "ht>1100&&idxHTagged&&idxTopTagged",Signal,"HT (GeV)","Events/80 GeV","TTag",1,1,20,1100,2700,"EvtWeight*EvtWtPV*btagsf*topSF(ptTopTagged)");
 
         TH1D * histB = (TH1D*) gROOT->FindObject("histQCD")->Clone();
-        TH1D * histBTT = (TH1D*) gROOT->FindObject("ht2")->Clone();
-        TH1D * histBW = (TH1D*) gROOT->FindObject("ht11")->Clone();
+        TH1D * histBTT = (TH1D*) gROOT->FindObject("TTJets")->Clone();
+        TH1D * histBW = (TH1D*) gROOT->FindObject("WJets")->Clone();
+        TH1D * histBST = (TH1D*) gROOT->FindObject("ST")->Clone();
         TH1D * histBSig = (TH1D*) gROOT->FindObject(Signal)->Clone();
 
         histQCD->SetBinContent(3,histB->Integral(0,1000));
@@ -1458,9 +1512,12 @@ void CutFlow(TString plot,TString Signal)
         histW->SetBinContent(3,histBW->Integral(0,1000));
 	cout << "W2: "<< histBW->Integral(0,1000) << endl;
 
+	histST->SetBinContent(3,histBST->Integral(0,1000));
+	cout << "ST2: "<< histBST->Integral(0,1000) << endl;
+	
 	histSig->SetBinContent(3,histBSig->Integral(0,1000));
 	cout << "Sig2: "<< histBSig->Integral(0,1000) << endl;
-
+/*
         makeStack(plot, "htak4>1000&&@HTagIdx.size()>0&&@TTagIdx03.size()>0",Signal,"HT GeV","Events/50 GeV","TTag",1,1,40,0,2000,"EvtWeight[0]*EvtWeight[4]/1.21*WeightHT(htak4)");
 
         TH1D * histC = (TH1D*) gROOT->FindObject("histQCD")->Clone();
@@ -1479,7 +1536,7 @@ void CutFlow(TString plot,TString Signal)
 
 	histSig->SetBinContent(4,histCSig->Integral(0,1000));
 	cout << "Sig3: "<< histCSig->Integral(0,1000) << endl;
-/*
+
         makeStack(plot, "htak4>1000&&@HTagIdx.size()>0&&@TTagIdx03.size()>0&&fMaxEtaAK4>2",Signal,"HT GeV","Events/50 GeV","FJet",1,1,40,0,2000,"EvtWeight[0]*EvtWeight[4]/1.21*WeightHT(htak4)");
 
         TH1D * histD = (TH1D*) gROOT->FindObject("histQCD")->Clone();
@@ -1501,44 +1558,65 @@ void CutFlow(TString plot,TString Signal)
 
 */	
 
-        histQCD->SetFillColor(kCyan);
-        histW->SetFillColor(kGreen);
-        histTT->SetFillColor(kBlue);
-	histSig->SetLineColor(kRed);
-	
+        histQCD->SetFillColor(16);
+        histW->SetFillColor(36);
+        histTT->SetFillColor(46);
+        histST->SetFillColor(26);
+	histSig->SetLineColor(3);
+	histSig->SetLineWidth(2);
+        histSig->SetLineStyle(1);
 	histQCD->SetMarkerStyle(0);
 	histW->SetMarkerStyle(0);
 	histTT->SetMarkerStyle(0);
+        histST->SetMarkerStyle(0);
 	histSig->SetMarkerStyle(0);
 
 
 	cutflow->Add(histW);
 	cutflow->Add(histTT);
 	cutflow->Add(histQCD);
+        cutflow->Add(histST);
+
+        TLatex latex;
+  	latex.SetNDC();
+  	latex.SetTextAngle(0);
+  	latex.SetTextColor(kBlack);
+  	latex.SetTextFont(42);
+  	latex.SetTextAlign(31);
+  	latex.SetTextSize(.04);
 
 
 	TCanvas * c2  = new TCanvas("c2");
 	c2->cd();
-
-	
+        c2->SetLogy();
+ 	
     	cutflow->Draw("histF");
 
 	histSig->Draw("Same");
 
-	cutflow->GetXaxis()->SetBinLabel(1,"Presel");
-	cutflow->GetXaxis()->SetBinLabel(2,"HT1000");
-	cutflow->GetXaxis()->SetBinLabel(3,"HTag");
-	cutflow->GetXaxis()->SetBinLabel(4,"TTag");
+	cutflow->GetXaxis()->SetBinLabel(1,"HT1100");
+	cutflow->GetXaxis()->SetBinLabel(2,"HTag");
+	cutflow->GetXaxis()->SetBinLabel(3,"TTag");
+        cutflow->GetXaxis()->SetLabelSize(0.06);
+        cutflow->GetYaxis()->SetLabelSize(0.04);
+	//cutflow->GetXaxis()->SetBinLabel(4,"TTag");
 	//cutflow->GetXaxis()->SetBinLabel(5,"ForwardJet");	
 
         TLegend * leg = new TLegend(0.6,0.6,0.80,0.85);
-        leg->AddEntry(histW,"WJets");
-        leg->AddEntry(histTT,"TTJets");
-        leg->AddEntry(histQCD,"QCD");
-	leg->AddEntry(histSig,Signal);
-
+        leg->SetBorderSize(0);
+        leg->SetFillColor(0);
+        leg->SetTextSize(0.02);
+        leg->AddEntry(histW,"W+jets");
+        leg->AddEntry(histTT,"t#bar{t}+jets");
+        leg->AddEntry(histQCD,"Multijets");
+        leg->AddEntry(histST, "Single top: tW");
+	leg->AddEntry(histSig,"M(T) = 1200 GeV (1 pb)");
 	leg->Draw("same");
-  
+  	latex.DrawLatex(.95,.96,lumiText);
+	latex.DrawLatex(0.2,.96,cmsText);
+	latex.DrawLatex(0.4,.96,extraText);
+
+        c2->SaveAs("CutFlow.pdf");  
 }
 
 void Compare(TString plot, TString cut1 ,TString cut2, TString datasets, TString label, TString yLabel, TString title, int rebin, int bins, int xMin, int xMax) 
