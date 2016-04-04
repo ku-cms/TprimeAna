@@ -1031,8 +1031,8 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
         latex.SetTextSize(.04);
 
 	//TString sScale = "WtTrig(ht)*EvtWeight*EvtWtPV";
-	//TString sScale = "EvtWeight*EvtWtPV";
-        TString sScale = "WeightHT(ht)*EvtWeight*EvtWtPV";
+	TString sScale = "EvtWeight*EvtWtPV";
+        //TString sScale = "WeightHT(ht)*EvtWeight*EvtWtPV";
 	//sScale += "*EvtWtHT";
 	
 //	if(HTscale == 1) sScale += "Up";
@@ -1056,8 +1056,8 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
         str_LHEweight.Form("%i",LHEweight); 
 	TString cuts = "ht>1100&&" ;
 	if(LHEweight > 0){
-		sScale += "*lhewts.second";
-		cuts += "lhewts.first=="+str_LHEweight+"&&"; 
+		sScale += "*lhewts.second["+str_LHEweight+"]";
+		//cuts += "lhewts.first=="+str_LHEweight+"&&"; 
 	}
 
 	makeStack("ht", cuts+"isRegionA" ,"Tprime1200_LH","HT GeV","Events","Cut-A",1,1,20,1100,2700,sScale,false,false,sExt);
@@ -1254,7 +1254,7 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
 
         Dest->Scale(histC->Integral(0,1000)/histA->Integral(0,1000));
         DestMC->Scale(histCQCD->Integral(0,1000)/histAQCD->Integral(0,1000));
-
+        cout << "B*C/A: " << Dest->Integral(0,1000) << endl;
 
 	if(!bMt) {
 		TFile limithists("LimitHists-HT"+sOpt+".root","RECREATE");
@@ -1472,7 +1472,7 @@ void CutFlow(TString plot,TString Signal)
         histSig->SetBinContent(1,histPSig->Integral(0,1000));
 	cout << "Sig1: "<< histPSig->Integral(0,1000) << endl;
 
-        makeStack(plot, "ht>1100&&idxHTagged",Signal,"HT GeV","Events/80 GeV","HTag",1,1,20,1100,2700,"EvtWeight*EvtWtPV*btagsf");
+        makeStack(plot, "ht>1100&&isHiggsTagged",Signal,"HT GeV","Events/80 GeV","HTag",1,1,20,1100,2700,"EvtWeight*EvtWtPV*btagsf");
 
         TH1D * histA = (TH1D*) gROOT->FindObject("histQCD")->Clone();
         TH1D * histATT = (TH1D*) gROOT->FindObject("TTJets")->Clone();
@@ -1495,7 +1495,7 @@ void CutFlow(TString plot,TString Signal)
 	histSig->SetBinContent(2,histASig->Integral(0,1000));
 	cout << "Sig1: "<< histASig->Integral(0,1000) << endl;
 
-        makeStack(plot, "ht>1100&&idxHTagged&&idxTopTagged",Signal,"HT (GeV)","Events/80 GeV","TTag",1,1,20,1100,2700,"EvtWeight*EvtWtPV*btagsf*topSF(ptTopTagged)");
+        makeStack(plot, "ht>1100&&isHiggsTagged&&isTopTagged",Signal,"HT (GeV)","Events/80 GeV","TTag",1,1,20,1100,2700,"EvtWeight*EvtWtPV*btagsf*topSF(ptTopTagged)");
 
         TH1D * histB = (TH1D*) gROOT->FindObject("histQCD")->Clone();
         TH1D * histBTT = (TH1D*) gROOT->FindObject("TTJets")->Clone();
