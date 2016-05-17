@@ -89,7 +89,7 @@ double WtTrig(double HT)
 }
 
 
-double WeightHT(double HT) 
+double WeightHT(double HT, int shift) 
 {
 
 //Fit between 1000 and 2400
@@ -99,31 +99,16 @@ double WeightHT(double HT)
 
 	if(HT < 1100 || HT > 2700)
 		return 1;
-	else
-		return (1+(-0.0001961*HT + 0.262));
+         
+	else {
+	  if (shift == 1) return (1+(2*(-0.00018784)*HT + 0.2274)); //HT fit w/ >2.4eta
+          if (shift == 0) return (1+((-0.00018784)*HT + 0.2274));
+	  if (shift == -1) return 1.0;
+	}
+//		return (1+(-0.00021513*HT + 0.2660)); //HT fit w/o >2.4eta
 //	else
-//		return (1+(-0.0001618*HT + 0.212)); //HT fit w/ >2.4eta
-//	else
-//		return (1+(-0.0002037*HT + 0.271)); //HT fit w/o >2.4eta
-	
-}
-double WeightHTUp(double HT)
-{
-        if(HT < 1100 || HT > 2700)
-                return 1;
-        else
-                return (1+0.019+((-0.0001618+0.0000139)*HT + 0.212));
-//        else 
-//                return (1+0.007+((-0.0002037+0.0000052)*HT + 0.271));
-}
-double WeightHTDown(double HT)
-{
-        if(HT < 1100 || HT > 2700)
-                return 1;
-        else
-                return (1-0.019+((-0.0001618-0.0000139)*HT + 0.212));
-//        else 
-//                return (1-0.007+((-0.0002037-0.0000052)*HT + 0.271));
+//		return (1+(-0.0001961*HT + 0.262));
+	return 1;	
 }
 
 
@@ -343,7 +328,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 {
 	gROOT->Clear();
 	//TString sPath = "/home/t3-ku/stringer/CMSSW_7_4_8_patch1/src/UserCode/TprimeAna/test/Selection0308/";
-        TString sPath = "/home/t3-ku/erichjs/work/B2G/CMSSW_7_4_8_patch1/src/TprimeAna/test/Selection0307/";
+        TString sPath = "/home/t3-ku/erichjs/work/B2G/CMSSW_7_4_8_patch1/src/TprimeAna/test/Selection0307/limitsBToTH/";
 	TH1::SetDefaultSumw2();
 
 	TChain * tree2 = new TChain("ana/tree");
@@ -874,7 +859,7 @@ double makeStack(TString plot,TString cuts, TString Signal, TString label, TStri
 	//ratioPlot(c1, hs, histData);
 
 	}
-	
+
 	return 0;
 }
 
@@ -1032,7 +1017,9 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
 
 	//TString sScale = "WtTrig(ht)*EvtWeight*EvtWtPV";
 	TString sScale = "EvtWeight*EvtWtPV";
-        //TString sScale = "WeightHT(ht)*EvtWeight*EvtWtPV";
+        if(HTscale == 0) sScale += "*WeightHT(ht,0)";
+	else if (HTscale == -1) sScale += "*WeightHT(ht,-1)";
+	else if (HTscale == 1) sScale += "*WeightHT(ht,1)";
 	//sScale += "*EvtWtHT";
 	
 //	if(HTscale == 1) sScale += "Up";
