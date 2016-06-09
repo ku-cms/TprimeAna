@@ -1089,24 +1089,28 @@ void ABCDData(bool bMt, int HTscale = 0, int btagSF = 0, int ttagSF = 0 ,int LHE
 
         TString cutBloose = "nAK8>1 && ";
         cutBloose += "  @idxTopTagged.size()>0";
-
+/*
         TString cutH0Loose  = " ( ptAK8[idxAK8[0]] > 300.&& ";
         cutH0Loose += "   TMath::Abs(etaAK8[idxAK8[0]]) < 2.4  && ";
         cutH0Loose += "   tau2AK8[idxAK8[0]]/tau1AK8[idxAK8[0]] < 0.6 && "; 
         cutH0Loose += "   (PrunedMassAK8[idxAK8[0]] > 105 && PrunedMassAK8[idxAK8[0]] < 135) && ";
-        cutH0Loose += "   ( sj0CSVAK8[idxAK8[0]]>0.400 || sj1CSVAK8[idxAK8[0]]>0.400) ) "; 
- 
+        cutH0Loose += "   ( sj0CSVAK8[idxAK8[0]]>0.605 || sj1CSVAK8[idxAK8[0]]>0.605) ) "; 
+*/       
+
+//        TString TMass = "TMath::Sqrt(2.*ptAK8[idxAK8[0]]*ptTopTagged[idxTopTagged[0]]*(TMath::CosH(etaAK8[idxAK8[0]]-etaTopTagged[idxTopTagged[0]])-TMath::Cos(phiAK8[idxAK8[0]]-phiTopTagged[idxTopTagged[0]])))";
+        TString TMass = "mass(ptAK8[idxAK8[1]],etaAK8[idxAK8[1]],phiAK8[idxAK8[1]],MAK8[idxAK8[1]],ptTopTagged[idxTopTagged[0]],etaTopTagged[idxTopTagged[0]],phiTopTagged[idxTopTagged[0]],MTopTagged[idxTopTagged[0]])";
+  
         TString cutH1Loose  = " ( ptAK8[idxAK8[1]] > 300.&& ";
         cutH1Loose += "   TMath::Abs(etaAK8[idxAK8[1]]) < 2.4  && ";
-        cutH1Loose += "   tau2AK8[idxAK8[1]]/tau1AK8[idxAK8[1]] < 0.6 && "; 
+        cutH1Loose += "   tau2AK8[idxAK8[1]]/tau1AK8[idxAK8[1]] < 1.0 && "; 
         cutH1Loose += "   (PrunedMassAK8[idxAK8[1]] > 105 && PrunedMassAK8[idxAK8[1]] < 135) && ";
         cutH1Loose += "   ( sj0CSVAK8[idxAK8[1]]>0.400 || sj1CSVAK8[idxAK8[1]]>0.400) ) "; 
+
  
- 
-        cutBloose +=  " && " + cutH0Loose + " || " + cutH1Loose ; 
-    
+//        cutBloose +=  " && " + cutH0Loose + " || " + cutH1Loose ; 
+        cutBloose += " &&" + cutH1Loose;  
 	if (bMt)
-		makeStack("mtprimeDummy", cuts+cutBloose,"Tprime1200_LH","HT GeV","Events","Cut-B_mt_Blooser",1,1,36,600,2400,sScale+tScale,false,false,sExt);
+		makeStack(TMass, cuts+cutBloose,"Tprime1200_LH","HT GeV","Events","Cut-B_mt_Blooser",1,1,36,600,2400,sScale+tScale,false,false,sExt);
 	else
         	makeStack("ht",cuts+"sj0CSVAK8>0.605||sj1CSVAK8>0.605&&@idxTopTagged.size()>0&&","Tprime1200_LH","HT GeV","Events","Cut-B_oneBTag",1,1,20,1100,2700,sScale+tScale,false,false,sExt);
         TH1D * hist_B = (TH1D*) gROOT->FindObject("htdata")->Clone();
