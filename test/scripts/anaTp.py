@@ -6,9 +6,11 @@ import tdrstyle
 import help
 import CMS_lumi
 from itertools import chain
+import gc
 # list of root files given as Signal, Background, Data.
 #from input_anaTp_cfi import Signals, Backgrounds, Data, lumi, preselDict, sampleXsec
 from input_anaTp_cfi import *
+from ABCDRegions_cfi import *
 # dictionaries should take the form of 
 #   {'sampleName' : file}
 # sampleXsec should be a dictionary of what each histogram should be scaled to
@@ -36,7 +38,7 @@ def getFiles(sampleDict):
         TFileList[sample] = rt.TFile(sampleDict[sample],'READ')
     return TFileList
 
-def analysis(treeVarDict, output = True, outFileName = './output.root'):
+def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', output = True, outFileName = './output.root'):
     '''
     Takes tree variables and produces histograms normalized to sigma*lumi/nEvts
     @treeVarDict : dictionary of variables to be run through analysis
@@ -44,7 +46,22 @@ def analysis(treeVarDict, output = True, outFileName = './output.root'):
     @output : boolean to to determine whether an output file is created
     @outFileName : name of the output root file containing the histograms
     '''
-
+    if 'Nominal' in  sample:
+        Signals = SignalFiles['Nominal']
+        Backgrounds = BackgroundFiles['Nominal']   
+    elif 'JERUp' in  sample:
+        Signals = SignalFiles['JERUp']
+        Backgrounds = BackgroundFiles['JERUp']   
+    elif 'JERDown' in  sample:
+        Signals = SignalFiles['JERDown']
+        Backgrounds = BackgroundFiles['JERDown']
+    elif 'JESUp' in  sample:
+        Signals = SignalFiles['JESUp']
+        Backgrounds = BackgroundFiles['JESUp']
+    elif 'JESDown' in  sample:
+        Signals = SignalFiles['JESDown']
+        Backgrounds = BackgroundFiles['JESDown']
+    
     sigFiles  = getFiles(Signals)
     bkgrFiles = getFiles(Backgrounds)
     #dataFiles = getFiles(Data)
@@ -98,7 +115,7 @@ def analysis(treeVarDict, output = True, outFileName = './output.root'):
 
         varHists[treeVar] = {} 
         print 'Retrieving histograms for: ', treeVar, ', ' + treeVarDict[treeVar]['Cuts']
-        print 'Weights applied: ', treeVarDict[treeVar]['Wts']
+        print 'Weights applied: ', treeVarDict[treeVar][Wts]
 
         for key, tree in chain(sigTrees.items(),bkgrTrees.items(),dataTree.items()):
             if 'Data' in key:
@@ -107,14 +124,13 @@ def analysis(treeVarDict, output = True, outFileName = './output.root'):
                 print key + ' retrieved'
                 varHists[treeVar]['Data'].SetBinErrorOption(rt.TH1.kPoisson)
             else: 
-                if ('LH' or 'RH') in key:
-                    tree.Draw(treeVar+'>>h'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar]['SigWts']+'*('+treeVarDict[treeVar]['Cuts']+')')
-                    print treeVarDict[treeVar]['Wts']+'*('+treeVarDict[treeVar]['Cuts']+')'
+                if 'LH' in key or 'RH' in key:
+                    tree.Draw(treeVar+'>>h'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar][SigWts]+'*('+treeVarDict[treeVar]['Cuts']+')')
                     print key + ' retrieved'
                     varHists[treeVar][key] = rt.gROOT.FindObject('h'+key)
                     sigFiles[key].Close()
                 else:
-                    tree.Draw(treeVar+'>>h'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar]['Wts']+'*('+treeVarDict[treeVar]['Cuts']+')')
+                    tree.Draw(treeVar+'>>h'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar][Wts]+'*('+treeVarDict[treeVar]['Cuts']+')')
                     print key + ' retrieved'
                     varHists[treeVar][key] = rt.gROOT.FindObject('h'+key)
                     if 'ST' not in key:
@@ -148,15 +164,15 @@ def analysis(treeVarDict, output = True, outFileName = './output.root'):
         outFile.Close()
     return varHists
 
-def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './signalRegionD.root'):
+def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './signalRegionD.root', Wts = 'Wts', SigWts = 'SigWts', sampleType = 'Nominal'):
     '''
     Function to calculate the numbers associated with the ABCD regions
     @isRegion : variable dictionary for the different regions and their cuts
     '''
-    cutA = analysis(RegionA, False)
-    cutB = analysis(RegionB, False)
-    cutC = analysis(RegionC, False)
-    cutD = analysis(RegionD, False)
+    cutA = analysis(RegionA, sampleType, Wts, SigWts, False)
+    cutB = analysis(RegionB, sampleType, Wts, SigWts, False)
+    cutC = analysis(RegionC, sampleType, Wts, SigWts, False)
+    cutD = analysis(RegionD, sampleType, Wts, SigWts, False)
     
 
     for var in cutA:
@@ -188,16 +204,16 @@ def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './sig
     if output is True:
         outFile = rt.TFile(outFileName, 'recreate')
         for var in cutD:
-            dir = outFile.mkdir(var,var)
-            dir.cd()
+            #dir = outFile.mkdir(var,var)
+            #dir.cd()
             for hist in cutD[var]:
                 cutD[var][hist].Write()
             outFile.cd()
         outFile.Close()
-
+    gc.collect()
     return cutD 
 
 if __name__ == '__main__':
     
     #analysis(preselDict, False, './test.root')
-    ABCD(isRegionA,isRegionB,isRegionC,isRegionD)
+    ABCD(isRegionA,isRegionB_mt,isRegionC,isRegionD_mt, True, './limits/LimitHists-MTNominal.root')
