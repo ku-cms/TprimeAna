@@ -2,15 +2,14 @@
 # this is currently a python code write up, to be fixed after overall setup is determined
 
 import ROOT as rt
-import tdrstyle
-import help
-import CMS_lumi
+#import tdrstyle
+#import help
+#import CMS_lumi
 from itertools import chain
 import gc
-# list of root files given as Signal, Background, Data.
 #from input_anaTp_cfi import Signals, Backgrounds, Data, lumi, preselDict, sampleXsec
 from input_anaTp_cfi import *
-from ABCDRegions_cfi import *
+#from ABCDRegions_cfi import *
 # dictionaries should take the form of 
 #   {'sampleName' : file}
 # sampleXsec should be a dictionary of what each histogram should be scaled to
@@ -38,7 +37,7 @@ def getFiles(sampleDict):
         TFileList[sample] = rt.TFile(sampleDict[sample],'READ')
     return TFileList
 
-def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', output = True, outFileName = './output.root'):
+def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', output = True, outFileName = './output.root', jetType = 'CHS'):
     '''
     Takes tree variables and produces histograms normalized to sigma*lumi/nEvts
     @treeVarDict : dictionary of variables to be run through analysis
@@ -73,25 +72,25 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
     dataTree = {}
 
     nEvts = {}
-    nEvts['ST'] = 0
     tempHists = {}
 
     varHists = {}
-    dataTree['Data'] = rt.TChain('ana/tree')
-    bkgrTrees['ST'] = rt.TChain('ana/tree')
+    dataTree['Data'] = rt.TChain('ana'+jetType+'/tree')
 
     print 'Files included:'
 
     for key in Signals:  
-        sigTrees[key] = rt.TChain('ana/tree')
+        sigTrees[key] = rt.TChain('ana'+jetType+'/tree')
         sigTrees[key].Add(Signals[key])
         print key
 
     for key in Backgrounds:
         if 'ST' in key:
+            bkgrTrees['ST'] = rt.TChain('ana'+jetType+'/tree')
             bkgrTrees['ST'].Add(Backgrounds[key])
+            nEvts['ST'] = 0
         else: 
-            bkgrTrees[key] = rt.TChain('ana/tree')
+            bkgrTrees[key] = rt.TChain('ana'+jetType+'/tree')
             bkgrTrees[key].Add(Backgrounds[key])
         print key
 
@@ -110,7 +109,6 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
     for key in sigFiles:
         tempHists[key] = sigFiles[key].Get('allEvents/hEventCount_wt')
         nEvts[key] = tempHists[key].Integral(0,10000)
-        
     for treeVar in treeVarDict:
 
         varHists[treeVar] = {} 
@@ -119,20 +117,20 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
 
         for key, tree in chain(sigTrees.items(),bkgrTrees.items(),dataTree.items()):
             if 'Data' in key:
-                tree.Draw(treeVar+'>>hData('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar]['Cuts'])
-                varHists[treeVar]['Data'] = rt.gROOT.FindObject('hData')
+                tree.Draw(treeVar+'>>Data('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar]['Cuts'])
+                varHists[treeVar]['Data'] = rt.gROOT.FindObject('Data')
                 print key + ' retrieved'
                 varHists[treeVar]['Data'].SetBinErrorOption(rt.TH1.kPoisson)
             else: 
                 if 'LH' in key or 'RH' in key:
-                    tree.Draw(treeVar+'>>h'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar][SigWts]+'*('+treeVarDict[treeVar]['Cuts']+')')
+                    tree.Draw(treeVar+'>>'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar][SigWts]+'*('+treeVarDict[treeVar]['Cuts']+')')
                     print key + ' retrieved'
-                    varHists[treeVar][key] = rt.gROOT.FindObject('h'+key)
+                    varHists[treeVar][key] = rt.gROOT.FindObject(key)
                     sigFiles[key].Close()
                 else:
-                    tree.Draw(treeVar+'>>h'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar][Wts]+'*('+treeVarDict[treeVar]['Cuts']+')')
+                    tree.Draw(treeVar+'>>'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar][Wts]+'*('+treeVarDict[treeVar]['Cuts']+')')
                     print key + ' retrieved'
-                    varHists[treeVar][key] = rt.gROOT.FindObject('h'+key)
+                    varHists[treeVar][key] = rt.gROOT.FindObject(key)
                     if 'ST' not in key:
                         bkgrFiles[key].Close()
         
@@ -140,7 +138,7 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
             if 'Data' not in key:
                 varHists[treeVar][key].Scale((sampleXsec[key]/nEvts[key])*lumi)
 
-        varHists[treeVar]['QCD'] = varHists[treeVar]['QCDHT700'].Clone('hQCD')
+        varHists[treeVar]['QCD'] = varHists[treeVar]['QCDHT700'].Clone('QCD')
         varHists[treeVar].pop('QCDHT700', None)
         for key, hist in varHists[treeVar].items():
             if ('QCDHT' in key):
@@ -164,15 +162,15 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
         outFile.Close()
     return varHists
 
-def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './signalRegionD.root', Wts = 'Wts', SigWts = 'SigWts', sampleType = 'Nominal'):
+def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './signalRegionD.root', Wts = 'Wts', SigWts = 'SigWts', sampleType = 'Nominal', jetType = 'CHS'):
     '''
     Function to calculate the numbers associated with the ABCD regions
     @isRegion : variable dictionary for the different regions and their cuts
     '''
-    cutA = analysis(RegionA, sampleType, Wts, SigWts, False)
-    cutB = analysis(RegionB, sampleType, Wts, SigWts, False)
-    cutC = analysis(RegionC, sampleType, Wts, SigWts, False)
-    cutD = analysis(RegionD, sampleType, Wts, SigWts, False)
+    cutA = analysis(RegionA, sampleType, Wts, SigWts, False, './dontMatterA.root', jetType)
+    cutB = analysis(RegionB, sampleType, Wts, SigWts, False, './dontMatterB.root', jetType)
+    cutC = analysis(RegionC, sampleType, Wts, SigWts, False, './dontMatterC.root', jetType)
+    cutD = analysis(RegionD, sampleType, Wts, SigWts, False, './dontMatterD.root', jetType)
     
 
     for var in cutA:
@@ -195,9 +193,11 @@ def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './sig
         if 'mtprime' in var:
             cutD[var]['estQCD'] = cutB['mtprimeDummy']['dataQCD'].Clone('estQCD')
             cutD[var]['estQCD'].Scale(cutC['ht']['dataQCD'].Integral(0,1000)/cutA['ht']['dataQCD'].Integral(0,1000))
+            print 'B*C/A = ', cutB['mtprimeDummy']['dataQCD'].Integral(0,1000)*(cutC['ht']['dataQCD'].Integral(0,1000)/cutA['ht']['dataQCD'].Integral(0,1000))
         else:
             cutD[var]['estQCD'] = cutB[var]['dataQCD'].Clone('estQCD')
             cutD[var]['estQCD'].Scale(cutC[var]['dataQCD'].Integral(0,1000)/cutA[var]['dataQCD'].Integral(0,1000))
+            print 'B*C/A = ',  cutB[var]['dataQCD'].Integral(0,1000)*(cutC[var]['dataQCD'].Integral(0,1000)/cutA[var]['dataQCD'].Integral(0,1000))
         for key in cutD[var]:
             if ('Data' not in key) and ('QCD' not in key) and ('LH' not in key) and ('RH' not in key):
                 cutD[var]['dataQCD'].Add(cutD[var][key],-1)
@@ -211,7 +211,8 @@ def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './sig
             outFile.cd()
         outFile.Close()
     gc.collect()
-    return cutD 
+#    return cutD
+    return cutA, cutB, cutC, cutD
 
 if __name__ == '__main__':
     

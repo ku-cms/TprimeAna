@@ -1,21 +1,29 @@
 #!/usr/bin/env python
 import ROOT as rt
 # lfn of samples to be run over
-dirSamples = '/home/t3-ku/erichjs/work/B2G/CMSSW_7_4_8_patch1/src/TprimeAna/test/SelectionTtotZ_26May16/samples/'
+dirSamples = '/home/t3-ku/erichjs/work/B2G/CMSSW_8_0_15/src/TprimeAna/test/80X_2p1/samples/'
 
 # data Luminosity
-lumi = 2264.524
+lumi = 27202.655 #B-G
+#lumi = 12884.276
 
 # Dictionaries of sample names and root files
 Data = { 
-         'JetHT_05Oct'      : dirSamples + 'JetHT_05Oct.root',
-         'JetHT_PromptReco' : dirSamples + 'JetHT_Prompt.root',
-         'JetHT_2015C'      : dirSamples + 'JetHT_2015C.root'
+         'JetHT_2016B'      : dirSamples + 'JetHT_2016B.root',
+         'JetHT_2016C'      : dirSamples + 'JetHT_2016C.root',
+         'JetHT_2016D'      : dirSamples + 'JetHT_2016D.root',
+         'JetHT_2016E'      : dirSamples + 'JetHT_2016E.root',
+         'JetHT_2016F'      : dirSamples + 'JetHT_2016F.root',
+         'JetHT_2016G'      : dirSamples + 'JetHT_2016G.root',
        }
 
 BackgroundFiles = { 'Nominal' : {
-                                    'TTJets'     : dirSamples + 'TTJets_powheg.root',
+                                    'TTJets'     : dirSamples + 'TTJets.root',
                                     'WJets'      : dirSamples + 'WJets.root',
+                                    #'QCDHT700_ext'   : dirSamples + 'QCDHT700_ext.root',
+                                    #'QCDHT1000_ext'  : dirSamples + 'QCDHT1000_ext.root',
+                                    #'QCDHT1500_ext'  : dirSamples + 'QCDHT1500_ext.root',
+                                    #'QCDHT2000_ext'  : dirSamples + 'QCDHT2000_ext.root',
                                     'QCDHT700'   : dirSamples + 'QCDHT700.root',
                                     'QCDHT1000'  : dirSamples + 'QCDHT1000.root',
                                     'QCDHT1500'  : dirSamples + 'QCDHT1500.root',
@@ -71,26 +79,12 @@ BackgroundFiles = { 'Nominal' : {
                   
                   }
 SignalFiles = { 'Nominal' : { 
-                               'TbtZ_800_LH' : dirSamples + 'TbtZ_800_LH.root',
-                               'TbtZ_900_LH' : dirSamples + 'TbtZ_900_LH.root',
-                               'TbtZ_1000_LH' : dirSamples + 'TbtZ_1000_LH.root',
-                               'TbtZ_1100_LH' : dirSamples + 'TbtZ_1100_LH.root',
-                               'TbtZ_1200_LH' : dirSamples + 'TbtZ_1200_LH.root',
-                               'TbtZ_1300_LH' : dirSamples + 'TbtZ_1300_LH.root',
-                               'TbtZ_1400_LH' : dirSamples + 'TbtZ_1400_LH.root',
-                               'TbtZ_1500_LH' : dirSamples + 'TbtZ_1500_LH.root',
-                               'TbtZ_1700_LH' : dirSamples + 'TbtZ_1700_LH.root',
-                               'TbtZ_1800_LH' : dirSamples + 'TbtZ_1800_LH.root',
-                               'TbtZ_800_RH' : dirSamples + 'TbtZ_800_RH.root',
-                               'TbtZ_900_RH' : dirSamples + 'TbtZ_900_RH.root',
-                               'TbtZ_1000_RH' : dirSamples + 'TbtZ_1000_RH.root',
-                               'TbtZ_1100_RH' : dirSamples + 'TbtZ_1100_RH.root',
-                               'TbtZ_1200_RH' : dirSamples + 'TbtZ_1200_RH.root',
-                               'TbtZ_1300_RH' : dirSamples + 'TbtZ_1300_RH.root',
-                               'TbtZ_1400_RH' : dirSamples + 'TbtZ_1400_RH.root',
-                               'TbtZ_1500_RH' : dirSamples + 'TbtZ_1500_RH.root',
-                               'TbtZ_1700_RH' : dirSamples + 'TbtZ_1700_RH.root',
-                               'TbtZ_1800_RH' : dirSamples + 'TbtZ_1800_RH.root'
+                               'TbtH_800_LH' : dirSamples + 'TbtH_800_LH.root',
+                               'TbtH_900_LH' : dirSamples + 'TbtH_900_LH.root',
+                               'TbtH_1000_LH' : dirSamples + 'TbtH_1000_LH.root',
+                               'TbtH_1200_LH' : dirSamples + 'TbtH_1200_LH.root',
+                               'TbtH_1500_LH' : dirSamples + 'TbtH_1500_LH.root',
+                               'TbtH_1800_LH' : dirSamples + 'TbtH_1800_LH.root'
                             },
                 'JERUp'   : {
                                'TbtZ_800_LH' : dirSamples + 'TbtZ_800_LH_JERUp.root',
@@ -190,67 +184,124 @@ sampleXsec = {
                'QCDHT1000'    : 1207,
                'QCDHT1500'    : 119.9,
                'QCDHT2000'    : 25.24,
+               #'QCDHT700_ext'     : 6831,
+               #'QCDHT1000_ext'    : 1207,
+               #'QCDHT1500_ext'    : 119.9,
+               #'QCDHT2000_ext'    : 25.24,
                'ST'           : 35.6,
                #'ZJets'        : 6.97,
-               'TbtZ_800_LH' : 1.0,
-               'TbtZ_900_LH' : 1.0,
-               'TbtZ_1000_LH' : 1.0,
-               'TbtZ_1100_LH' : 1.0,
-               'TbtZ_1200_LH' : 1.0,
-               'TbtZ_1300_LH' : 1.0,
-               'TbtZ_1400_LH' : 1.0,
-               'TbtZ_1500_LH' : 1.0,
-               'TbtZ_1700_LH' : 1.0,
-               'TbtZ_1800_LH' : 1.0,
-               'TbtZ_800_RH' : 1.0,
-               'TbtZ_900_RH' : 1.0,
-               'TbtZ_1000_RH' : 1.0,
-               'TbtZ_1100_RH' : 1.0,
-               'TbtZ_1200_RH' : 1.0,
-               'TbtZ_1300_RH' : 1.0,
-               'TbtZ_1400_RH' : 1.0,
-               'TbtZ_1500_RH' : 1.0,
-               'TbtZ_1700_RH' : 1.0,
-               'TbtZ_1800_RH' : 1.0
+               'TbtH_800_LH' : 10000.0,
+               'TbtH_900_LH' : 10000.0,
+               'TbtH_1000_LH' : 10000.0,
+               'TbtH_1200_LH' : 10000.0,
+               'TbtH_1500_LH' : 10000.0,
+               'TbtH_1800_LH' : 10000.0
              }
 
 # Dictionary containing the information for each variable to be retrieved
 
-preselDict = {
+
+NPV = {
+                'npv' 
+                : {
+                    'Wts'    : 'EvtWeight*EvtWtPV',
+                    'SigWts' : 'EvtWeight*EvtWtPV',
+                    'Cuts'   : '1',
+                    'xMin'   : '0',
+                    'xMax'   : '80',
+                    'nBins'  : '80',
+                    'xLabel' : 'nPV',
+                    'yLabel' : 'Events',
+                    'log'    : True
+                  },
+             }
+HT = {
                 'ht' 
                 : {
                     'Wts'    : 'EvtWeight*EvtWtPV',
                     'SigWts' : 'EvtWeight*EvtWtPV',
                     'Cuts'   : 'ht>1100',
                     'xMin'   : '1100',
-                    'xMax'   : '2700',
-                    'nBins'  : '20',
+                    'xMax'   : '3200',
+                    'nBins'  : '50',
+                    'xLabel' : 'H_{T} [GeV]',
+                    'yLabel' : 'Events/42GeV',
+                    'log'    : True
+                  },
+      }
+btagsf = {
+                'btagsf' 
+                : {
+                    'Wts'    : '1.0',
+                    'SigWts' : '1.0',
+                    'Cuts'   : '1',
+                    'xMin'   : '0',
+                    'xMax'   : '2000',
+                    'nBins'  : '40',
+                    'xLabel' : 'H_{T} [GeV]',
+                    'yLabel' : 'Events/40GeV',
+                    'log'    : True
+                  },
+      }
+
+Cutflow_pre = {
+                'ht' 
+                : {
+                    'Wts'    : 'EvtWeight*EvtWtPV*QuadWeightHT(ht,0)',
+                    'SigWts' : 'EvtWeight*EvtWtPV',
+                    'Cuts'   : 'ht>1100',
+                    'xMin'   : '1100',
+                    'xMax'   : '3200',
+                    'nBins'  : '50',
                     'xLabel' : 'H_{T} [GeV]',
                     'yLabel' : 'Events/80GeV',
                     'log'    : True
                   },
-                'PrunedMassAK8' 
+             }
+
+Cutflow_higgs = {
+                'ht' 
                 : {
-                    'Wts'    : 'EvtWeight*EvtWtPV',
-                    'SigWts'    : 'EvtWeight*EvtWtPV',
-                    'Cuts'   : 'ht>1100',
-                    'xMin'   : '0',
-                    'xMax'   : '800',
-                    'nBins'  : '40',
-                    'xLabel' : 'Pruned Mass [GeV]',
-                    'yLabel' : 'Jets',
+                    'Wts'    : 'EvtWeight*EvtWtPV*QuadWeightHT(ht,0)',
+                    'SigWts' : 'EvtWeight*EvtWtPV',
+                    'Cuts'   : 'ht>1100&&(isRegionC||isRegionD)',
+#                   'Cuts'   : 'ht>1100&&(isRegionA||isRegionB||isRegionC||isRegionD||(',
+                    'xMin'   : '1100',
+                    'xMax'   : '3200',
+                    'nBins'  : '50',
+                    'xLabel' : 'H_{T} [GeV]',
+                    'yLabel' : 'Events/42GeV',
                     'log'    : True
                   },
-                'tau2AK8/tau1AK8'
+               }
+Cutflow_top = {
+                'ht' 
                 : {
-                    'Wts'    : 'EvtWeight*EvtWtPV',
-                    'SigWts'    : 'EvtWeight*EvtWtPV',
-                    'Cuts'   : 'ht>1100',
-                    'xMin'   : '0', 
-                    'xMax'   : '1', 
+                    'Wts'    : 'EvtWeight*EvtWtPV*toptagsf*QuadWeightHT(ht,0)',
+                    'SigWts' : 'EvtWeight*EvtWtPV*toptagsf',
+#                    'Cuts'   : 'ht>1100&&(ptAK8>400&&SoftDropMassAK8<220&&SoftDropMassAK8>105&&(tau3AK8/tau2AK8)<0.5)',
+                    'Cuts'   : 'ht>1100&&@idxTopTagged.size()>0',
+                    'xMin'   : '1100',
+                    'xMax'   : '3200',
                     'nBins'  : '50',
-                    'xLabel' : '#tau_{21}',
-                    'yLabel' : 'Jets',
-                    'log'    : True 
-                  }
+                    'xLabel' : 'H_{T} [GeV]',
+                    'yLabel' : 'Events/80GeV',
+                    'log'    : True
+                  },
+               }
+
+Cutflow_higgs_top = {
+                'ht' 
+                : {
+                    'Wts'    : 'EvtWeight*EvtWtPV*topSF(ptTopTagged)',
+                    'SigWts' : 'EvtWeight*EvtWtPV*topSF(ptTopTagged)',
+#                    'Cuts'   : 'ht>1100&&(ptAK8>400&&SoftDropMassAK8<220&&SoftDropMassAK8>105&&(tau3AK8/tau2AK8)<0.5&&max(sj0CSVAK8,sj1CSVAK8)>0.46)&&(isRegionC||isRegionD)&&dR(etaAK8,phiAK8,etaHTagged,phiHTagged)>2.0',
+                   'Cuts'   : 'ht>1100&&isRegionD',
+                    'xMin'   : '1100',
+                    'xMax'   : '3200',
+                    'nBins'  : '40',
+                    'xLabel' : 'H_{T} [GeV]',
+                    'yLabel' : 'Events/80GeV',
+                    'log'    : True
+                  },
              }
