@@ -7,9 +7,8 @@ import ROOT as rt
 #import CMS_lumi
 from itertools import chain
 import gc
-#from input_anaTp_cfi import Signals, Backgrounds, Data, lumi, preselDict, sampleXsec
 from input_anaTp_cfi import *
-#from ABCDRegions_cfi import *
+
 # dictionaries should take the form of 
 #   {'sampleName' : file}
 # sampleXsec should be a dictionary of what each histogram should be scaled to
@@ -25,6 +24,7 @@ from os import path
 if path.exists('weightFunctions.C'):
     rt.gROOT.Macro('weightFunctions.C')
 
+nEvts = {}
 
 def getFiles(sampleDict):
     '''
@@ -37,7 +37,7 @@ def getFiles(sampleDict):
         TFileList[sample] = rt.TFile(sampleDict[sample],'READ')
     return TFileList
 
-def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', output = True, outFileName = './output.root', jetType = 'CHS'):
+def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', output = True, outFileName = './output.root', jetType = 'CHS', QCDType = 'Pt'):
     '''
     Takes tree variables and produces histograms normalized to sigma*lumi/nEvts
     @treeVarDict : dictionary of variables to be run through analysis
@@ -45,9 +45,14 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
     @output : boolean to to determine whether an output file is created
     @outFileName : name of the output root file containing the histograms
     '''
+    rt.gROOT.SetBatch()
     if 'Nominal' in  sample:
-        Signals = SignalFiles['Nominal']
-        Backgrounds = BackgroundFiles['Nominal']   
+        if 'Pt' in QCDType:
+            Signals = SignalFiles['Nominal']
+            Backgrounds = BackgroundFilesPt['Nominal']   
+        elif 'HT' in QCDType:
+            Signals = SignalFiles['Nominal']
+            Backgrounds = BackgroundFilesHT['Nominal']   
     elif 'JERUp' in  sample:
         Signals = SignalFiles['JERUp']
         Backgrounds = BackgroundFiles['JERUp']   
@@ -71,7 +76,6 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
     sigTrees  = {}
     dataTree = {}
 
-    nEvts = {}
     tempHists = {}
 
     varHists = {}
@@ -137,19 +141,29 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
         for key in varHists[treeVar]:
             if 'Data' not in key:
                 varHists[treeVar][key].Scale((sampleXsec[key]/nEvts[key])*lumi)
-
-        varHists[treeVar]['QCD'] = varHists[treeVar]['QCDHT700'].Clone('QCD')
-        varHists[treeVar].pop('QCDHT700', None)
-        for key, hist in varHists[treeVar].items():
-            if ('QCDHT' in key):
-                varHists[treeVar]['QCD'].Add(hist)
-                varHists[treeVar].pop(key, None)
-            else:
-                continue
-      
+        if QCDType is 'Pt':
+            varHists[treeVar]['QCD'] = varHists[treeVar]['QCDPt300'].Clone('QCD')
+            varHists[treeVar].pop('QCDPt300', None)
+            for key, hist in varHists[treeVar].items():
+                if ('QCDPt' in key):
+                    varHists[treeVar]['QCD'].Add(hist)
+                    varHists[treeVar].pop(key, None)
+                else:
+                    continue
+        elif QCDType is 'HT': 
+            varHists[treeVar]['QCD'] = varHists[treeVar]['QCDHT700'].Clone('QCD')
+            varHists[treeVar].pop('QCDHT700', None)
+            for key, hist in varHists[treeVar].items():
+                if ('QCDHT' in key):
+                    varHists[treeVar]['QCD'].Add(hist)
+                    varHists[treeVar].pop(key, None)
+                else:
+                    continue
         print 'Number of events for ' + treeVar + ':'
         for key in varHists[treeVar]:
-            print key + ':      ', varHists[treeVar][key].Integral(0,1000)
+            error = rt.Double(0)
+            integral = varHists[treeVar][key].IntegralAndError(0,1000,error)
+            print key + ':      ', integral, ' +\- ', error
 
     if output is True:
         outFile = rt.TFile(outFileName, 'recreate')
@@ -162,19 +176,20 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
         outFile.Close()
     return varHists
 
-def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './signalRegionD.root', Wts = 'Wts', SigWts = 'SigWts', sampleType = 'Nominal', jetType = 'CHS'):
+def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './signalRegionD.root', Wts = 'Wts', SigWts = 'SigWts', sampleType = 'Nominal', jetType = 'CHS', QCDType = 'Pt'):
     '''
     Function to calculate the numbers associated with the ABCD regions
     @isRegion : variable dictionary for the different regions and their cuts
     '''
-    cutA = analysis(RegionA, sampleType, Wts, SigWts, False, './dontMatterA.root', jetType)
-    cutB = analysis(RegionB, sampleType, Wts, SigWts, False, './dontMatterB.root', jetType)
-    cutC = analysis(RegionC, sampleType, Wts, SigWts, False, './dontMatterC.root', jetType)
-    cutD = analysis(RegionD, sampleType, Wts, SigWts, False, './dontMatterD.root', jetType)
+    cutA = analysis(RegionA, sampleType, Wts, SigWts, False, './dontMatterA.root', jetType, QCDType)
+    cutB = analysis(RegionB, sampleType, Wts, SigWts, False, './dontMatterB.root', jetType, QCDType)
+    cutC = analysis(RegionC, sampleType, Wts, SigWts, False, './dontMatterC.root', jetType, QCDType)
+    cutD = analysis(RegionD, sampleType, Wts, SigWts, False, './dontMatterD.root', jetType, QCDType)
     
 
     for var in cutA:
         cutA[var]['dataQCD'] = cutA[var]['Data'].Clone('dataQCD')
+        varA = var
         for key in cutA[var]:
             if ('Data' not in key) and ('QCD' not in key) and ('LH' not in key) and ('RH' not in key):
                 cutA[var]['dataQCD'].Add(cutA[var][key],-1)
@@ -185,6 +200,7 @@ def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './sig
                 cutB[var]['dataQCD'].Add(cutB[var][key],-1)
     for var in cutC:
         cutC[var]['dataQCD'] = cutC[var]['Data'].Clone('dataQCD')
+        varC = var
         for key in cutC[var]:
             if ('Data' not in key) and ('QCD' not in key) and ('LH' not in key) and ('RH' not in key):
                 cutC[var]['dataQCD'].Add(cutC[var][key],-1)
@@ -192,8 +208,8 @@ def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './sig
         cutD[var]['dataQCD'] = cutD[var]['Data'].Clone('dataQCD')
         if 'mtprime' in var:
             cutD[var]['estQCD'] = cutB['mtprimeDummy']['dataQCD'].Clone('estQCD')
-            cutD[var]['estQCD'].Scale(cutC['ht']['dataQCD'].Integral(0,1000)/cutA['ht']['dataQCD'].Integral(0,1000))
-            print 'B*C/A = ', cutB['mtprimeDummy']['dataQCD'].Integral(0,1000)*(cutC['ht']['dataQCD'].Integral(0,1000)/cutA['ht']['dataQCD'].Integral(0,1000))
+            cutD[var]['estQCD'].Scale(cutC[varC]['dataQCD'].Integral(0,1000)/cutA[varA]['dataQCD'].Integral(0,1000))
+            print 'B*C/A = ', cutB['mtprimeDummy']['dataQCD'].Integral(0,1000)*(cutC[varC]['dataQCD'].Integral(0,1000)/cutA[varA]['dataQCD'].Integral(0,1000))
         else:
             cutD[var]['estQCD'] = cutB[var]['dataQCD'].Clone('estQCD')
             cutD[var]['estQCD'].Scale(cutC[var]['dataQCD'].Integral(0,1000)/cutA[var]['dataQCD'].Integral(0,1000))
@@ -213,6 +229,9 @@ def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './sig
     gc.collect()
 #    return cutD
     return cutA, cutB, cutC, cutD
+
+def Mjj(idx1, idx2):
+    return 'mass(ptAK8['+str(idx1)+'],etaAK8['+str(idx1)+'],phiAK8['+str(idx1)+'],MAK8['+str(idx1)+'],ptAK8['+str(idx2)+'],etaAK8['+str(idx2)+'],phiAK8['+str(idx2)+'],MAK8['+str(idx)+'])'
 
 if __name__ == '__main__':
     

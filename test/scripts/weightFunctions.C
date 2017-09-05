@@ -4,66 +4,57 @@ void weightFunctions(){
                    return;
 }
 
-double topSFVal(double TopPT, int shift)
+double topSFVal(double pT, int shift)
 {
 
 
-//   if( TopPT >= 400. && TopPT < 550.) {
-//      if(shift == 0 ) return 1.37 ;
-//      if(shift == 1 ) return 1.37+0.27 ;
-//      if(shift == -1) return 1.37-0.27;
-//    }
-//    else if ( TopPT  >= 550.)  {
-//      if(shift == 0 ) return 1.07 ;
-//      if(shift == 1 ) return 1.07+0.34 ;
-//      if(shift == -1) return 1.07-0.34;
-//    }
-   if( TopPT >= 400) {
-        if(shift == 0) return 1.01;
-        if(shift == 1) return 1.08;
-        if(shift == -1) return 0.97;
+     if (pT >= 400) {  //0.1% working point
+     if(shift == 0) return 1.03;
+     if(shift == 1) return 1.09;
+     if(shift == -1) return 0.99;
      }
-//   if( TopPT >= 400) {
-//        if(shift == 0) return 1.05;
-//        if(shift == 1) return 1.13;
-//        if(shift == -1) return 1.01;
-//     }
-//   if( TopPT >= 400) {
-//        if(shift == 0) return 1.05;
-//        if(shift == 1) return 1.16;
-//        if(shift == -1) return 1.00;
-//     }
-//   if( TopPT >= 400) {
-//        if(shift == 0) return 1.08;
-//        if(shift == 1) return 1.18;
+//   if( pT >= 400) { //0.3% Working point
+//        if(shift == 0) return 1.07;
+//        if(shift == 1) return 1.12;
 //        if(shift == -1) return 1.04;
 //     }
-//   if( TopPT >= 400. && TopPT < 550.) {
-//      if(shift == 0 ) return 0.88 ;
-//      if(shift == 1 ) return 0.88+0.13 ;
-//      if(shift == -1) return 0.88-0.13;
-//    }
-//    else if ( TopPT  >= 550.)  {
-//      if(shift == 0 ) return 0.94 ;
-//      if(shift == 1 ) return 0.94+0.29 ;
-//      if(shift == -1) return 0.94-0.29;
-//    }
+//   if( pT >= 400) { //1.0% working point
+//        if(shift == 0) return 1.06;
+//        if(shift == 1) return 1.14;
+//        if(shift == -1) return 1.02;
+//     }
+//   if( pT >= 400) { //3.0% working point
+//        if(shift == 0) return 1.06;
+//        if(shift == 1) return 1.15;
+//        if(shift == -1) return 1.02;
+//     }
         return 1;
 }
-double topSF(double TopPT)
+double topSF(double pT)
 {
-        return topSFVal(TopPT,0);
+        return topSFVal(pT, 0);
+}
+double topSFUp(double pT)
+{
+        return topSFVal(pT, 1);
+}
+double topSFDown(double pT)
+{
+        return topSFVal(pT, -1);
 }
 
-double topSFUp(double TopPT)
+double WeightSumPt(double Pt1, double Pt2, int shift)
 {
-        return topSFVal(TopPT,1);
-}
-double topSFDown(double TopPT)
-{
-        return topSFVal(TopPT,-1);
-}
+        double SPt = Pt1 + Pt2;
+        double wt = 8.38664e-1 * TMath::Exp(-6.05027e-4*SPt) + 5.54459e-1; 
+        double sigErr = 1;  
+                                                                                                       //Sqrt(sigma(b)^2 + sigma(m)^2*x^2 + 2*x*cov(m,b))
+        if(SPt < 850 || SPt > 4000)
+                return 1;
 
+        return wt + (shift*sigErr) ; 
+
+}
 double WeightHT(double HT, int shift)
 {
 
@@ -96,12 +87,49 @@ double QuadWeightHT(double HT, int shift)
         return wt + (shift*sigErr) ; 
 
 }
+//double trigWtHT ( double HT, int shift)
+//{
+//    double bgLumi = 27954.778;
+//    double hLumi = 8857.034;
+//    double lumi = 36811.812;
+//
+//
+//    double wt = bglumi / lumi * bgEff + hLumi / lumi * hEff;
+//    double err = TMath::Sqrt( pow(bgErr*bgLumi/lumi,2) + pow(hErr*hLumi/lumi,2));
+//
+//    return wt + (shift * err);
+//}
 
 double dR(double eta1,double phi1, double eta2, double phi2) {
 
         return deltaR(eta1,phi1,eta2,phi2);
 }
+double delEta(double etaTopTagged, double etaHTagged )
+{
+ 
 
+ 	return ( etaTopTagged - etaHTagged );
+
+}
+
+double delPhi(double ptTopTagged, double etaTopTagged, double phiTopTagged, double MTopTagged, double ptHTagged, double etaHTagged, double phiHTagged, double MHTagged)
+{
+
+        TLorentzVector TCand, HCand;
+
+                TCand.SetPtEtaPhiM(ptTopTagged,
+                         etaTopTagged,
+                         phiTopTagged,
+                         MTopTagged);
+
+                HCand.SetPtEtaPhiM(ptHTagged,
+                         etaHTagged,
+                         phiHTagged,
+                         MHTagged);
+
+        return TCand.DeltaPhi( HCand );
+
+}
 //TString Mjj(Int_t idx1, Int_t idx2){
  //   TString out;
 //    out.Form("mass(ptAK8[idxAK8[%d]],etaAK8[idxAK8[%d]],phiAK8[idxAK8[%d]],MAK8[idxAK8[%d]],ptAK8[idxAK8[%d]],etaAK8[idxAK8[%d]],phiAK8[idxAK8[%d]],MAK8[idxAK8[%d]])",idx1,idx1,idx1,idx1,idx2,idx2,idx2,idx2);
@@ -113,4 +141,64 @@ double Mjj(double pt1, double eta1, double phi1, double M1, double pt2, double e
     V1.SetPtEtaPhiM(pt1,eta1,phi1,M1);
     V2.SetPtEtaPhiM(pt2,eta2,phi2,M2);
     return (V1+V2).M();
+}
+double costheta(double ptTopTagged, double etaTopTagged, double phiTopTagged, double MTopTagged, double ptHTagged, double etaHTagged, double phiHTagged, double MHTagged)
+{
+
+	 TLorentzVector TCand, HCand, CCand, TCand_cms, HCand_cms, CCand_cms;
+	 TVector3 CCand_Boost;
+	 double rapH,thetaH, rapC, thetaC, theta;
+
+                TCand.SetPtEtaPhiM(ptTopTagged,
+                         etaTopTagged,
+                         phiTopTagged,
+                         MTopTagged);
+
+                HCand.SetPtEtaPhiM(ptHTagged,
+                         etaHTagged,
+                         phiHTagged,
+                         MHTagged);
+	
+		CCand = TCand + HCand;
+
+		CCand_Boost  = CCand.BoostVector();
+   		//TCand_cms = TCand;
+   		//TCand_cms.Boost( -1 * CCand_Boost);
+                HCand_cms = HCand;
+                HCand_cms.Boost( -1 * CCand_Boost);
+                //CCand_cms = CCand;
+                //CCand_cms.Boost( -1 * CCand_Boost);            	
+
+/*		rapH = HCand_cms.PseudoRapidity();
+		thetaH = 2*atan( exp( (-1)* rapH ) );
+		rapC = CCand_cms.PseudoRapidity();
+                thetaC = 2*atan( exp( (-1)* rapC ) );
+		theta = thetaH - thetaC;
+*/
+//	return cos( theta );
+	return HCand_cms.CosTheta();
+}
+
+double gammabeta(double ptTopTagged, double etaTopTagged, double phiTopTagged, double MTopTagged, double ptHTagged, double etaHTagged, double phiHTagged, double MHTagged)
+{
+
+ 	TLorentzVector TCand, HCand;
+ 	double Ph, Pt;
+
+                TCand.SetPtEtaPhiM(ptTopTagged,
+                         etaTopTagged,
+                         phiTopTagged,
+                         MTopTagged);
+
+                HCand.SetPtEtaPhiM(ptHTagged,
+                         etaHTagged,
+                         phiHTagged,
+                         MHTagged);
+
+ //      	Ph = sqrt( (HCand.Px())*(HCand.Px()) + (HCand.Py())*(HCand.Py()) + (HCand.Pz())*(HCand.Pz()) );
+ //             Pt = sqrt( (TCand.Px())*(TCand.Px()) + (TCand.Py())*(TCand.Py()) + (TCand.Pz())*(TCand.Pz()) );
+
+	return ((HCand + TCand).Gamma())*((HCand + TCand).Beta());
+//      return abs((HCand + TCand).Pt() )/mtprime;
+//	return (Ph + Pt)/mtprime; 
 }
