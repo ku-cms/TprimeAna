@@ -4,6 +4,11 @@ void weightFunctions(){
                    return;
 }
 
+double mtprimeTilde(double mt, double Mtop, double MHiggs)
+{
+
+     return mt - Mtop - MHiggs + 125 + 172.5;
+}
 double topSFVal(double pT, int shift)
 {
 
@@ -104,7 +109,7 @@ double dR(double eta1,double phi1, double eta2, double phi2) {
 
         return deltaR(eta1,phi1,eta2,phi2);
 }
-double delEta(double etaTopTagged, double etaHTagged )
+double dEta(double etaTopTagged, double etaHTagged )
 {
  
 
@@ -142,6 +147,12 @@ double Mjj(double pt1, double eta1, double phi1, double M1, double pt2, double e
     V2.SetPtEtaPhiM(pt2,eta2,phi2,M2);
     return (V1+V2).M();
 }
+double pTjj(double pt1, double eta1, double phi1, double M1, double pt2, double eta2, double phi2, double M2){
+    TLorentzVector V1, V2;
+    V1.SetPtEtaPhiM(pt1,eta1,phi1,M1);
+    V2.SetPtEtaPhiM(pt2,eta2,phi2,M2);
+    return (V1+V2).Pt();
+}
 double costheta(double ptTopTagged, double etaTopTagged, double phiTopTagged, double MTopTagged, double ptHTagged, double etaHTagged, double phiHTagged, double MHTagged)
 {
 
@@ -178,7 +189,73 @@ double costheta(double ptTopTagged, double etaTopTagged, double phiTopTagged, do
 //	return cos( theta );
 	return HCand_cms.CosTheta();
 }
+double costhetatb(double ptsj1Tagged, double etasj1Tagged, double phisj1Tagged, double Msj1Tagged, double CSVsj1Tagged, double ptsj2Tagged, double etasj2Tagged, double phisj2Tagged, double Msj2Tagged, double CSVsj2Tagged)
+{
 
+	 TLorentzVector sj1Cand, sj2Cand, CCand, sj1Cand_cms, sj2Cand_cms, CCand_cms;
+	 TVector3 CCand_Boost;
+	 double rapsj2,thetasj2, rapC, thetaC, theta;
+
+                sj1Cand.SetPtEtaPhiM(ptsj1Tagged,
+                         etasj1Tagged,
+                         phisj1Tagged,
+                         Msj1Tagged);
+
+                sj2Cand.SetPtEtaPhiM(ptsj2Tagged,
+                         etasj2Tagged,
+                         phisj2Tagged,
+                         Msj2Tagged);
+	
+		CCand = sj1Cand + sj2Cand;
+
+		CCand_Boost  = CCand.BoostVector();
+
+          if (CSVsj1Tagged>CSVsj2Tagged){
+                sj1Cand_cms = sj1Cand;
+                sj1Cand_cms.Boost( -1 * CCand_Boost);
+                return sj1Cand_cms.CosTheta();
+          }
+          else if (CSVsj2Tagged > CSVsj1Tagged){
+   		sj2Cand_cms = sj2Cand;
+   		sj2Cand_cms.Boost( -1 * CCand_Boost);
+                return sj2Cand_cms.CosTheta();
+          }
+          return 1.;
+}
+
+double costhetatbInv(double ptsj1Tagged, double etasj1Tagged, double phisj1Tagged, double Msj1Tagged, double CSVsj1Tagged, double ptsj2Tagged, double etasj2Tagged, double phisj2Tagged, double Msj2Tagged, double CSVsj2Tagged)
+{
+
+	 TLorentzVector sj1Cand, sj2Cand, CCand, sj1Cand_cms, sj2Cand_cms, CCand_cms;
+	 TVector3 CCand_Boost;
+	 double rapsj2,thetasj2, rapC, thetaC, theta;
+
+                sj1Cand.SetPtEtaPhiM(ptsj1Tagged,
+                         etasj1Tagged,
+                         phisj1Tagged,
+                         Msj1Tagged);
+
+                sj2Cand.SetPtEtaPhiM(ptsj2Tagged,
+                         etasj2Tagged,
+                         phisj2Tagged,
+                         Msj2Tagged);
+	
+		CCand = sj1Cand + sj2Cand;
+
+		CCand_Boost  = CCand.BoostVector();
+
+          if (CSVsj1Tagged>CSVsj2Tagged){
+                sj1Cand_cms = sj1Cand;
+                sj1Cand_cms.Boost( -1 * CCand_Boost);
+                return sj2Cand_cms.CosTheta();
+          }
+          else if (CSVsj2Tagged > CSVsj1Tagged){
+   		sj2Cand_cms = sj2Cand;
+   		sj2Cand_cms.Boost( -1 * CCand_Boost);
+                return sj1Cand_cms.CosTheta();
+          }
+          return 1.;
+}
 double gammabeta(double ptTopTagged, double etaTopTagged, double phiTopTagged, double MTopTagged, double ptHTagged, double etaHTagged, double phiHTagged, double MHTagged)
 {
 

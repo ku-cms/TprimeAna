@@ -79,7 +79,7 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
     tempHists = {}
 
     varHists = {}
-    dataTree['Data'] = rt.TChain('ana'+jetType+'/tree')
+    dataTree['Data'] = rt.TChain('anaCHS/tree')
 
     print 'Files included:'
 
@@ -89,7 +89,7 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
         print key
 
     for key in Backgrounds:
-        if 'ST' in key:
+        if 'ST' in key and '_t_' not in key:
             bkgrTrees['ST'] = rt.TChain('ana'+jetType+'/tree')
             bkgrTrees['ST'].Add(Backgrounds[key])
             nEvts['ST'] = 0
@@ -103,16 +103,16 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
         print key
 
     for key in bkgrFiles:
-        if 'ST' in key:
+        if 'ST' in key and '_t_' not in key:
             tempHists[key] = bkgrFiles[key].Get('allEvents/hEventCount_wt')
-            nEvts['ST'] += tempHists[key].Integral(0,10000)
+            nEvts['ST'] += tempHists[key].Integral(1,10000)
         else:
             tempHists[key] = bkgrFiles[key].Get('allEvents/hEventCount_wt')
-            nEvts[key] = tempHists[key].Integral(0,10000)
+            nEvts[key] = tempHists[key].Integral(1,10000)
 
     for key in sigFiles:
         tempHists[key] = sigFiles[key].Get('allEvents/hEventCount_wt')
-        nEvts[key] = tempHists[key].Integral(0,10000)
+        nEvts[key] = tempHists[key].Integral(1,10000)
     for treeVar in treeVarDict:
 
         varHists[treeVar] = {} 
@@ -126,24 +126,33 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
                 print key + ' retrieved'
                 varHists[treeVar]['Data'].SetBinErrorOption(rt.TH1.kPoisson)
             else: 
-                if 'LH' in key or 'RH' in key:
+                if 'LH' in key or 'RH' in key or 'TpTp' in key:
                     tree.Draw(treeVar+'>>'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar][SigWts]+'*('+treeVarDict[treeVar]['Cuts']+')')
                     print key + ' retrieved'
                     varHists[treeVar][key] = rt.gROOT.FindObject(key)
                     sigFiles[key].Close()
                 else:
-                    tree.Draw(treeVar+'>>'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar][Wts]+'*('+treeVarDict[treeVar]['Cuts']+')')
+                    if 'QCD' in key and 'lhewts.second' in treeVarDict[treeVar][Wts]:
+                        if '[5]' in treeVarDict[treeVar][Wts]:
+                            tree.Draw(treeVar+'>>'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar][Wts].replace('*(SelectedEvent_lhewts.second[5]/SelectedEvent_lhewts.second[1])','')+'*('+treeVarDict[treeVar]['Cuts']+')')
+                            #tree.Draw(treeVar+'>>'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar][Wts].replace('*SelectedEvent_lhewts.second[5]','')+'*('+treeVarDict[treeVar]['Cuts']+')')
+                        elif '[9]' in treeVarDict[treeVar][Wts]:
+                            tree.Draw(treeVar+'>>'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar][Wts].replace('*(SelectedEvent_lhewts.second[9]/SelectedEvent_lhewts.second[1])','')+'*('+treeVarDict[treeVar]['Cuts']+')')
+                            #tree.Draw(treeVar+'>>'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar][Wts].replace('*SelectedEvent_lhewts.second[9]','')+'*('+treeVarDict[treeVar]['Cuts']+')')
+                        print 'changed weights'
+                    else:
+                        tree.Draw(treeVar+'>>'+key+'('+treeVarDict[treeVar]['nBins']+','+treeVarDict[treeVar]['xMin']+','+treeVarDict[treeVar]['xMax']+')',treeVarDict[treeVar][Wts]+'*('+treeVarDict[treeVar]['Cuts']+')')
                     print key + ' retrieved'
                     varHists[treeVar][key] = rt.gROOT.FindObject(key)
-                    if 'ST' not in key:
+                    if 'ST' not in key and 'Mtt' not in key:
                         bkgrFiles[key].Close()
-        
         for key in varHists[treeVar]:
             if 'Data' not in key:
+                print key
                 varHists[treeVar][key].Scale((sampleXsec[key]/nEvts[key])*lumi)
         if QCDType is 'Pt':
-            varHists[treeVar]['QCD'] = varHists[treeVar]['QCDPt300'].Clone('QCD')
-            varHists[treeVar].pop('QCDPt300', None)
+            varHists[treeVar]['QCD'] = varHists[treeVar]['QCDPt3200'].Clone('QCD')
+            varHists[treeVar].pop('QCDPt3200', None)
             for key, hist in varHists[treeVar].items():
                 if ('QCDPt' in key):
                     varHists[treeVar]['QCD'].Add(hist)
@@ -159,10 +168,25 @@ def analysis(treeVarDict, sample = 'Nominal', Wts = 'Wts', SigWts = 'SigWts', ou
                     varHists[treeVar].pop(key, None)
                 else:
                     continue
+        for key in varHists[treeVar]:
+            if 'Mtt' in key:
+                varHists[treeVar]['TTJetsMtt'] = varHists[treeVar]['TTJetsMtt700'].Clone('TTJetsMtt')
+                varHists[treeVar]['TTJetsMtt'].Add(varHists[treeVar]['TTJetsMtt1000'])
+                #varHists[treeVar].pop('TTJetsMtt700', None)
+                #varHists[treeVar].pop('TTJetsMtt1000', None)
+                break
+        for key in varHists[treeVar]:
+            if 'ST_t' in key:
+                varHists[treeVar]['ST_t'] = varHists[treeVar]['ST_t_top'].Clone('ST_t')
+                varHists[treeVar]['ST_t'].Add(varHists[treeVar]['ST_t_antitop'])
+                varHists[treeVar].pop('ST_t_top', None)
+                varHists[treeVar].pop('ST_t_antitop', None)
+                break
+
         print 'Number of events for ' + treeVar + ':'
         for key in varHists[treeVar]:
             error = rt.Double(0)
-            integral = varHists[treeVar][key].IntegralAndError(0,1000,error)
+            integral = varHists[treeVar][key].IntegralAndError(1,1000,error)
             print key + ':      ', integral, ' +\- ', error
 
     if output is True:
@@ -191,31 +215,35 @@ def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './sig
         cutA[var]['dataQCD'] = cutA[var]['Data'].Clone('dataQCD')
         varA = var
         for key in cutA[var]:
-            if ('Data' not in key) and ('QCD' not in key) and ('LH' not in key) and ('RH' not in key):
+            if ('Data' not in key) and ('QCD' not in key) and ('LH' not in key) and ('RH' not in key) and ('TpTp' not in key):
                 cutA[var]['dataQCD'].Add(cutA[var][key],-1)
     for var in cutB:
+        varB = var
         cutB[var]['dataQCD'] = cutB[var]['Data'].Clone('dataQCD')
+        print 'dataQCD: ', cutB[var]['dataQCD'].Integral(1,1000)
         for key in cutB[var]:
-            if ('Data' not in key) and ('QCD' not in key) and ('LH' not in key) and ('RH' not in key):
+            if ('Data' not in key) and ('QCD' not in key) and ('LH' not in key) and ('RH' not in key) and ('TpTp' not in key):
                 cutB[var]['dataQCD'].Add(cutB[var][key],-1)
     for var in cutC:
         cutC[var]['dataQCD'] = cutC[var]['Data'].Clone('dataQCD')
         varC = var
         for key in cutC[var]:
-            if ('Data' not in key) and ('QCD' not in key) and ('LH' not in key) and ('RH' not in key):
+            if ('Data' not in key) and ('QCD' not in key) and ('LH' not in key) and ('RH' not in key) and ('TpTp' not in key):
                 cutC[var]['dataQCD'].Add(cutC[var][key],-1)
     for var in cutD:
         cutD[var]['dataQCD'] = cutD[var]['Data'].Clone('dataQCD')
-        if 'mtprime' in var:
-            cutD[var]['estQCD'] = cutB['mtprimeDummy']['dataQCD'].Clone('estQCD')
-            cutD[var]['estQCD'].Scale(cutC[varC]['dataQCD'].Integral(0,1000)/cutA[varA]['dataQCD'].Integral(0,1000))
-            print 'B*C/A = ', cutB['mtprimeDummy']['dataQCD'].Integral(0,1000)*(cutC[varC]['dataQCD'].Integral(0,1000)/cutA[varA]['dataQCD'].Integral(0,1000))
+        if 'mtprime' in var or 'Mjj' in var:
+            cutD[var]['estQCD'] = cutB[varB]['dataQCD'].Clone('estQCD')
+            cutD[var]['estQCD'].Scale(cutC[varC]['dataQCD'].Integral(1,1000)/cutA[varA]['dataQCD'].Integral(1,1000))
+            cutD[var]['MC_estQCD'] = cutB[varB]['QCD'].Clone('estQCD_MC')
+            cutD[var]['MC_estQCD'].Scale(cutC[varC]['QCD'].Integral(1,1000)/cutA[varA]['QCD'].Integral(1,1000))
+            print 'B*C/A = ', cutB[varB]['dataQCD'].Integral(1,1000)*(cutC[varC]['dataQCD'].Integral(1,1000)/cutA[varA]['dataQCD'].Integral(1,1000))
         else:
             cutD[var]['estQCD'] = cutB[var]['dataQCD'].Clone('estQCD')
-            cutD[var]['estQCD'].Scale(cutC[var]['dataQCD'].Integral(0,1000)/cutA[var]['dataQCD'].Integral(0,1000))
-            print 'B*C/A = ',  cutB[var]['dataQCD'].Integral(0,1000)*(cutC[var]['dataQCD'].Integral(0,1000)/cutA[var]['dataQCD'].Integral(0,1000))
+            cutD[var]['estQCD'].Scale(cutC[var]['dataQCD'].Integral(1,1000)/cutA[var]['dataQCD'].Integral(1,1000))
+            print 'B*C/A = ',  cutB[var]['dataQCD'].Integral(1,1000)*(cutC[var]['dataQCD'].Integral(1,1000)/cutA[var]['dataQCD'].Integral(1,1000))
         for key in cutD[var]:
-            if ('Data' not in key) and ('QCD' not in key) and ('LH' not in key) and ('RH' not in key):
+            if ('Data' not in key) and ('QCD' not in key) and ('LH' not in key) and ('RH' not in key) and ('TpTp' not in key):
                 cutD[var]['dataQCD'].Add(cutD[var][key],-1)
     if output is True:
         outFile = rt.TFile(outFileName, 'recreate')
@@ -228,6 +256,8 @@ def ABCD(RegionA, RegionB, RegionC, RegionD, output = True, outFileName = './sig
         outFile.Close()
     gc.collect()
 #    return cutD
+    for var in cutC:
+        print cutC[var]['dataQCD'].Integral(1,1000)
     return cutA, cutB, cutC, cutD
 
 def Mjj(idx1, idx2):
