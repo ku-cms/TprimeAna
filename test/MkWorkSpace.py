@@ -13,7 +13,7 @@ jmax 3 number of backgrounds
 kmax * number of nuisance parameters (sources of systematical uncertainties)
 ---------------------------------------------------------------------------------------
 shapes data_obs          RREG  ROOTFILENAME MTP_regionREG_data_obs
-shapes PROCMASS          RREG  ROOTFILENAME MTP_regionREG_PROC_MASS_LH MTP_regionREG_PROC_MASS_LH_$SYSTEMATIC
+shapes PROCMASS          RREG  ROOTFILENAME MTP_regionREG_PROC_MASS_WIDTH_SP MTP_regionREG_PROC_MASS_WIDTH_SP_$SYSTEMATIC
 shapes TTJets            RREG  ROOTFILENAME MTP_regionREG_TTJets MTP_regionREG_TTJets_$SYSTEMATIC
 shapes Other             RREG  ROOTFILENAME MTP_regionREG_Other MTP_regionREG_Other_$SYSTEMATIC
 shapes QCD               RREG  ROOTFILENAME MTP_regionREG_estQCD MTP_regionREG_estQCD_$SYSTEMATIC
@@ -43,6 +43,7 @@ ttag               shape   1.0               1.0            1.0           -
 mufr               shape   1.0               1.0            1.0           -            
 JES                shape   1.0               1.0            1.0           -            
 JER                shape   1.0               1.0            1.0           -            
+JMR                shape   1.0               1.0            1.0           -            
 ---------------------------------------------------------------------------------------
 '''
 
@@ -80,6 +81,7 @@ ttag               shape   1.0         1.0               1.0             -
 mufr               shape   1.0         1.0               1.0             -            
 JES                shape   1.0         1.0               1.0             -            
 JER                shape   1.0         1.0               1.0             -            
+JMR                shape   1.0         1.0               1.0             -            
 '''
 
 datacard_regionsAC_rate='''ABCDrate     lnU     -                   -                 -               0.4/1.6      
@@ -135,6 +137,8 @@ def MkDatacard(carddir, proc, mass, width, spin, channel, reg, ws):
       card = open(os.path.join(carddir, 'datacard2015_{0}_{1}_{2}_R{3}.txt'.format(proc, mass, channel, reg)), 'w')
       card_contents = re.sub('PROC', proc,    datacard2015_template)
       card_contents = re.sub('MASS', mass,    card_contents)
+      card_contents = re.sub('WIDTH',width,   card_contents)
+      card_contents = re.sub('SP'   ,spin,    card_contents)
       card_contents = re.sub('REG',  reg,     card_contents)
       card_contents = re.sub('ROOTFILENAME',  ws.replace('workspace', 'template'), card_contents)
       card.write(card_contents)
@@ -232,6 +236,7 @@ def MkWorkSpaceAndCards(fname, carddir):
 
   systs=[
       'JER', 
+      'JMR', 
       'JES', 
       'Shape', 
       'Stat', 
@@ -395,14 +400,16 @@ import re, subprocess
 
 asym_template='''#!/bin/bash
 
-eval `scramv1 runtime -sh`
 
 workdir=WORKDIR
+rundir=RUNDIR
 
-rundir=${pwd}
+cd ${workdir}
+eval `scramv1 runtime -sh`
+cd ${rundir}
 
-combine -M FitDiagnostics -s 123456 -m MASS -d ../CARDDIR/datacard_PROC_MASS_WIDTH_toy.root --expectSignal 0 -t 1 --saveToys --setParameters QCD_tH_RA_norm=424,QCD_tH_RB_norm=58,QCD_tH_RC_norm=112,QCD_tH_RD_norm=15,QCD_tZ_RA_norm=5584.79,QCD_tZ_RB_norm=607.636,QCD_tZ_RC_norm=243.204,QCD_tZ_RD_norm=26.4611 --cminDefaultMinimizerTolerance=0.05  --cminFallbackAlgo Minuit,0.001 --rMin -1.0 --rMax 1.0
-combine -M AsymptoticLimits -s 123456 -m MASS -d ../CARDDIR/datacard_PROC_MASS_WIDTH.root -t 1 --toysFile higgsCombineTest.FitDiagnostics.mHMASS.123456.root --run expected --expectSignal 0 -v 5 --rMin -0.1 --rMax 20 --cminDefaultMinimizerTolerance=0.05 >& AsymptoticLimits_PROC_MASS.log
+combine -M FitDiagnostics -s 123456 -m MASS -d ../CARDDIR/datacard_PROC_MASS_WIDTH_toy.root --expectSignal 0 -t 1 --saveToys --setParameters QCD_tH_RA_norm=424,QCD_tH_RB_norm=58,QCD_tH_RC_norm=112,QCD_tH_RD_norm=15,QCD_tZ_RA_norm=5584.79,QCD_tZ_RB_norm=607.636,QCD_tZ_RC_norm=243.204,QCD_tZ_RD_norm=26.4611 --cminDefaultMinimizerTolerance=0.2  --cminFallbackAlgo Minuit,0.001 --rMin -1.0 --rMax 1.0
+combine -M AsymptoticLimits -s 123456 -m MASS -d ../CARDDIR/datacard_PROC_MASS_WIDTH.root -t 1 --toysFile higgsCombineTest.FitDiagnostics.mHMASS.123456.root --run expected --expectSignal 0 -v 5 --rMin -0.1 --rMax 5 --cminPoiOnlyFit --cminPreScan --cminDefaultMinimizerTolerance=0.2 >& AsymptoticLimits_PROC_MASS.log
 mv higgsCombineTest.AsymptoticLimits.mHMASS.123456.root higgsCombineTest.AsymptoticLimits.mHMASS_WIDTH.123456.root
 
 
@@ -418,6 +425,7 @@ def submitAsymptotic(sig, m, w, carddir):
   if not os.path.exists(rundir): os.mkdir(rundir)
 
   run_script = re.sub('WORKDIR', workdir, asym_template)
+  run_script = re.sub('RUNDIR', rundir, run_script)
   run_script = re.sub('PROC', sig, run_script)
   run_script = re.sub('MASS', str(m), run_script)
   run_script = re.sub('WIDTH', w, run_script)
@@ -475,10 +483,10 @@ def main():
   if len(sys.argv) < 3: 
     sys.exit(usage)
 
-  #import functools
-  #map(functools.partial(MkWorkSpaceAndCards, carddir=sys.argv[-1]), sys.argv[1:-1])
-  #CombineCards(sys.argv[-1])
-  runAsymptotic(sys.argv[-1])
+  import functools
+  map(functools.partial(MkWorkSpaceAndCards, carddir=sys.argv[-1]), sys.argv[1:-1])
+  CombineCards(sys.argv[-1])
+  #runAsymptotic(sys.argv[-1])
 
 if __name__ == "__main__":
   main()
